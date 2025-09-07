@@ -1,0 +1,113 @@
+# Regional Configuration for India-specific Social Media Analytics
+
+# Supported Languages
+languages:
+  primary: ["en", "hi"]  # English, Hindi
+  regional: ["ta", "te", "bn", "mr", "gu", "kn", "ml", "or", "pa", "as"]
+  
+# Geographic Configuration
+geography:
+  country: "IN"
+  bounding_box:
+    north: 35.5044
+    south: 6.4627
+    east: 97.3953
+    west: 68.1097
+  
+  # Major coastal cities (high priority for marine hazards)
+  coastal_cities:
+    - name: "Mumbai"
+      state: "Maharashtra"
+      priority: "high"
+    - name: "Chennai" 
+      state: "Tamil Nadu"
+      priority: "high"
+    - name: "Visakhapatnam"
+      state: "Andhra Pradesh"
+      priority: "high"
+    - name: "Kochi"
+      state: "Kerala"
+      priority: "medium"
+    - name: "Mangalore"
+      state: "Karnataka"
+      priority: "medium"
+
+# Hazard Keywords by Language
+hazard_keywords:
+  english:
+    flood: ["flood", "flooding", "waterlogged", "inundated", "submerged", "water level rising"]
+    tsunami: ["tsunami", "tidal wave", "sea wave", "ocean wave"]
+    high_waves: ["high waves", "rough seas", "giant waves", "massive waves"]
+    cyclone: ["cyclone", "hurricane", "typhoon", "storm", "tropical storm"]
+    storm_surge: ["storm surge", "sea surge", "coastal flooding"]
+    
+  hindi:
+    flood: ["बाढ़", "पानी", "जल प्रलय", "डूबना"]
+    tsunami: ["सुनामी", "समुद्री लहर", "ज्वारीय लहर"]
+    cyclone: ["चक्रवात", "तूफान", "आंधी"]
+    
+  tamil:
+    flood: ["வெள்ளம்", "நீர்பெருக்கு", "நீர்மூழ்க்கம்"]
+    tsunami: ["சுனாமி", "கடல்அலை"]
+    cyclone: ["புயல்", "காற்றுவேகம்"]
+    
+  telugu:
+    flood: ["వరద", "నీటిమునిగిపోవడం", "జలప్రళయం"]
+    tsunami: ["సునామి", "సముద్రతరంగాలు"]
+    cyclone: ["తుఫాను", "గాలివానలు"]
+
+# Location Aliases and Variations
+location_aliases:
+  cities:
+    "vizag": "Visakhapatnam"
+    "hyd": "Hyderabad"
+    "blr": "Bangalore"
+    "bangalore": "Bengaluru"
+    "bombay": "Mumbai"
+    "calcutta": "Kolkata"
+    "madras": "Chennai"
+    "trivandrum": "Thiruvananthapuram"
+    "cochin": "Kochi"
+    
+  states:
+    "UP": "Uttar Pradesh"
+    "MP": "Madhya Pradesh" 
+    "AP": "Andhra Pradesh"
+    "TN": "Tamil Nadu"
+    "WB": "West Bengal"
+    "KA": "Karnataka"
+    "MH": "Maharashtra"
+    "TS": "Telangana"
+    "KL": "Kerala"
+
+# Seasonal Risk Factors
+seasonal_risks:
+  monsoon_months: [6, 7, 8, 9]  # June to September
+  cyclone_season:
+    pre_monsoon: [3, 4, 5]  # March to May
+    post_monsoon: [10, 11, 12]  # October to December
+  
+  high_risk_periods:
+    - name: "Southwest Monsoon"
+      months: [6, 7, 8, 9]
+      regions: ["Western Ghats", "Northeast India", "West Coast"]
+      hazards: ["flood", "landslide"]
+      
+    - name: "Northeast Monsoon"
+      months: [10, 11, 12]
+      regions: ["Tamil Nadu", "Andhra Pradesh", "Karnataka Coast"]
+      hazards: ["cyclone", "flood"]
+
+# Priority Alert Regions
+priority_regions:
+  high:
+    - "Mumbai, Maharashtra"
+    - "Chennai, Tamil Nadu" 
+    - "Visakhapatnam, Andhra Pradesh"
+    - "Kochi, Kerala"
+    
+  medium:
+    - "Kolkata, West Bengal"
+    - "Bhubaneswar, Odisha"
+    - "Mangalore, Karnataka"
+    - "Surat, Gujarat"

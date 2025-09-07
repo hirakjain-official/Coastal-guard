@@ -1,0 +1,69 @@
+# Database Configuration Template
+
+# PostgreSQL Configuration
+postgresql:
+  # Connection settings
+  host: localhost
+  port: 5432
+  database: social_analytics
+  username: sa_user
+  # password: set via environment variable POSTGRES_PASSWORD
+  
+  # Connection pool settings
+  pool_size: 20
+  max_overflow: 10
+  pool_timeout: 30
+  
+  # SSL settings
+  ssl_mode: prefer
+  
+# Redis Configuration (for caching and session storage)
+redis:
+  host: localhost
+  port: 6379
+  database: 0
+  # password: set via environment variable REDIS_PASSWORD
+  
+  # Connection pool settings
+  max_connections: 50
+  retry_on_timeout: true
+  socket_timeout: 5
+  
+# Database Schema Configuration
+schema:
+  # Table names
+  tables:
+    posts: social_posts
+    processed_posts: processed_posts
+    analyzed_posts: analyzed_posts
+    hotspots: detected_hotspots
+    batch_runs: batch_executions
+    validation_results: validation_results
+    alerts: sent_alerts
+    
+  # Indexes to create
+  indexes:
+    - table: social_posts
+      columns: [created_at, location]
+      name: idx_posts_time_location
+    - table: analyzed_posts
+      columns: [hazard_type, confidence_score]
+      name: idx_posts_hazard_confidence
+    - table: detected_hotspots
+      columns: [detection_time, urgency]
+      name: idx_hotspots_time_urgency
+
+# Data Retention Policies
+retention:
+  raw_posts: 90  # days
+  processed_posts: 365  # days
+  analyzed_posts: 1095  # 3 years
+  hotspots: 1825  # 5 years
+  batch_runs: 180  # days
+  
+# Backup Configuration
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  retention_days: 30
+  compression: true
