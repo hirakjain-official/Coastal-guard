@@ -1,0 +1,253 @@
+{% extends "base_new.html" %}
+
+{% block title %}Admin Dashboard - Coastal Hazard Management{% endblock %}
+
+{% block extra_head %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        text-align: center;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+    
+    .stat-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.8;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #4ade80;
+        margin: 0;
+    }
+    
+    .stat-label {
+        color: #9ca3af;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+    
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+    
+    .section-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: #f9fafb;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .report-item {
+        border-left: 3px solid #4ade80;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 0 8px 8px 0;
+    }
+    
+    .report-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .report-meta {
+        font-size: 0.875rem;
+        color: #9ca3af;
+        margin-bottom: 0.5rem;
+    }
+    
+    .confidence-badge {
+        display: inline-block;
+        background: rgba(74, 222, 128, 0.2);
+        color: #4ade80;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .cluster-item {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .cluster-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .cluster-count {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3b82f6;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <h1>🚨 Emergency Command Center</h1>
+        <p>Real-time monitoring and analysis of coastal disaster reports</p>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value">{{ stats.total_reports }}</div>
+            <div class="stat-label">Total Reports</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-value">{{ stats.pending_reports }}</div>
+            <div class="stat-label">Pending Reports</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-value">{{ stats.high_confidence_reports }}</div>
+            <div class="stat-label">High Confidence</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">🌍</div>
+            <div class="stat-value">{{ stats.clusters_found }}</div>
+            <div class="stat-label">Active Clusters</div>
+        </div>
+    </div>
+    
+    <!-- Content Grid -->
+    <div class="content-grid">
+        <!-- Recent High-Confidence Reports -->
+        <div class="section-card">
+            <div class="section-title">
+                <span>🎯</span>
+                Recent High-Confidence Reports
+            </div>
+            
+            {% if recent_reports %}
+                {% for report in recent_reports %}
+                <div class="report-item">
+                    <div class="report-title">{{ report.title }}</div>
+                    <div class="report-meta">
+                        📍 {{ report.city }}{% if report.state %}, {{ report.state }}{% endif %}
+                        {% if report.created_at %}
+                            • ⏰ {{ report.created_at[:19] }}
+                        {% endif %}
+                    </div>
+                    {% if report.correlation_confidence %}
+                        <div class="confidence-badge">
+                            AI: {{ (report.correlation_confidence * 100)|round|int }}% confidence
+                        </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 2rem; color: #9ca3af;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+                    <p>No high-confidence reports yet</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Report Clusters -->
+        <div class="section-card">
+            <div class="section-title">
+                <span>🌍</span>
+                Geographic Clusters (Last 7 Days)
+            </div>
+            
+            {% if clusters %}
+                {% for cluster in clusters[:5] %}
+                <div class="cluster-item">
+                    <div class="cluster-header">
+                        <strong>{{ cluster.location_name }}</strong>
+                        <div class="cluster-count">{{ cluster.count }} reports</div>
+                    </div>
+                    <div style="font-size: 0.875rem; color: #9ca3af;">
+                        📊 Avg Confidence: {{ (cluster.avg_confidence * 100)|round|int }}%
+                        {% if cluster.hazard_types %}
+                            • 🏷️ {{ cluster.hazard_types|join(', ') }}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if clusters|length > 5 %}
+                <div style="text-align: center; padding: 1rem;">
+                    <a href="{{ url_for('admin_reports') }}" class="btn-primary">
+                        View All Clusters
+                    </a>
+                </div>
+                {% endif %}
+            {% else %}
+                <div style="text-align: center; padding: 2rem; color: #9ca3af;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🗺️</div>
+                    <p>No clusters detected</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

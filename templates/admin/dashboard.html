@@ -1,0 +1,974 @@
+{% extends "base_new.html" %}
+
+{% block title %}Admin Dashboard - Coastal Hazard Management{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        text-align: center;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+    
+    .stat-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.8;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #4ade80;
+        margin: 0;
+    }
+    
+    .stat-label {
+        color: #9ca3af;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+    
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+    
+    .section-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: #f9fafb;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .report-item {
+        border-left: 3px solid #4ade80;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 0 8px 8px 0;
+    }
+    
+    .report-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .report-meta {
+        font-size: 0.875rem;
+        color: #9ca3af;
+        margin-bottom: 0.5rem;
+    }
+    
+    .confidence-badge {
+        display: inline-block;
+        background: rgba(74, 222, 128, 0.2);
+        color: #4ade80;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .cluster-item {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .cluster-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .cluster-count {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3b82f6;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .analytics-controls {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .analytics-controls select {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: #fff;
+        padding: 0.5rem 1rem;
+    }
+    
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .chart-container {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .chart-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #f9fafb;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .prediction-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .prediction-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .hotspot-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .hotspot-item:last-child {
+        border-bottom: none;
+    }
+    
+    .risk-score {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .risk-high { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .risk-medium { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+    .risk-low { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+    
+    @media (max-width: 768px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .analytics-grid {
+            grid-template-columns: 1fr;
+        }
+        .analytics-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <h1>🚨 Emergency Command Center</h1>
+        <p>Real-time monitoring and analysis of coastal disaster reports</p>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value">{{ stats.total_reports }}</div>
+            <div class="stat-label">Total Reports</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-value">{{ stats.pending_reports }}</div>
+            <div class="stat-label">Pending Reports</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-value">{{ stats.high_confidence_reports }}</div>
+            <div class="stat-label">High Confidence</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">🌍</div>
+            <div class="stat-value">{{ stats.clusters_found }}</div>
+            <div class="stat-label">Active Clusters</div>
+        </div>
+    </div>
+    
+    <!-- Interactive Admin Map -->
+    <div class="section-card" style="margin-bottom: 2rem;">
+        <div class="section-title">
+            <span>🗺️</span>
+            Report Clusters & Geographic Distribution
+        </div>
+        
+        <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                    <div style="width: 24px; height: 24px; background: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.75rem;">5+</div>
+                    <span style="color: #9ca3af;">High Activity (5+ reports)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                    <div style="width: 20px; height: 20px; background: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.75rem;">3</div>
+                    <span style="color: #9ca3af;">Medium Activity (2-4 reports)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                    <div style="width: 16px; height: 16px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.6rem;">1</div>
+                    <span style="color: #9ca3af;">Single Report</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <select id="clusterRadius" onchange="updateClusterRadius()" style="background: rgba(0, 0, 0, 0.3); color: #fff; border: 1px solid rgba(255, 255, 255, 0.2); padding: 0.5rem; border-radius: 6px; font-size: 0.875rem;">
+                    <option value="2">2km Radius</option>
+                    <option value="4" selected>4km Radius</option>
+                    <option value="6">6km Radius</option>
+                    <option value="10">10km Radius</option>
+                </select>
+                <button onclick="toggleHeatmapView()" id="heatmapToggle" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">
+                    🔥 Heatmap View
+                </button>
+                <button onclick="fitMapToClusters()" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">
+                    🎯 Fit to Clusters
+                </button>
+                <button onclick="refreshMapData()" style="background: rgba(139, 92, 246, 0.2); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">
+                    🔄 Refresh
+                </button>
+            </div>
+        </div>
+        
+        <!-- Map Container -->
+        <div id="adminMap" style="height: 500px; width: 100%; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); margin: 1rem 0;"></div>
+        
+        <div style="margin-top: 1rem; font-size: 0.875rem; color: #9ca3af; text-align: center;">
+            Click on cluster markers to view detailed report information • Clusters show reports from the last 7 days
+        </div>
+    </div>
+    
+    <!-- Content Grid -->
+    <div class="content-grid">
+        <!-- Recent High-Confidence Reports -->
+        <div class="section-card">
+            <div class="section-title">
+                <span>🎯</span>
+                Recent High-Confidence Reports
+            </div>
+            
+            {% if recent_reports %}
+                {% for report in recent_reports %}
+                <div class="report-item">
+                    <div class="report-title">{{ report.title }}</div>
+                    <div class="report-meta">
+                        📍 {{ report.city }}{% if report.state %}, {{ report.state }}{% endif %}
+                        {% if report.created_at %}
+                            • ⏰ {{ report.created_at[:19] }}
+                        {% endif %}
+                    </div>
+                    {% if report.correlation_confidence %}
+                        <div class="confidence-badge">
+                            AI: {{ (report.correlation_confidence * 100)|round|int }}% confidence
+                        </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 2rem; color: #9ca3af;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+                    <p>No high-confidence reports yet</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Report Clusters -->
+        <div class="section-card">
+            <div class="section-title">
+                <span>🌍</span>
+                Geographic Clusters (Last 7 Days)
+            </div>
+            
+            {% if clusters %}
+                {% for cluster in clusters[:5] %}
+                <div class="cluster-item">
+                    <div class="cluster-header">
+                        <strong>{{ cluster.location_name }}</strong>
+                        <div class="cluster-count">{{ cluster.count }} reports</div>
+                    </div>
+                    <div style="font-size: 0.875rem; color: #9ca3af;">
+                        📊 Avg Confidence: {{ (cluster.avg_confidence * 100)|round|int }}%
+                        {% if cluster.hazard_types %}
+                            • 🏷️ {{ cluster.hazard_types|join(', ') }}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if clusters|length > 5 %}
+                <div style="text-align: center; padding: 1rem;">
+                    <a href="{{ url_for('admin_reports') }}" class="btn-primary">
+                        View All Clusters
+                    </a>
+                </div>
+                {% endif %}
+            {% else %}
+                <div style="text-align: center; padding: 2rem; color: #9ca3af;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🗺️</div>
+                    <p>No clusters detected</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Advanced Analytics Controls -->
+    <div class="analytics-controls">
+        <span style="color: #d1d5db; font-weight: 600;">📊 Analytics Period:</span>
+        <select id="analyticsTimeRange" onchange="updateAnalytics()">
+            <option value="7">Last 7 Days</option>
+            <option value="14">Last 14 Days</option>
+            <option value="30" selected>Last 30 Days</option>
+            <option value="60">Last 60 Days</option>
+        </select>
+        <button onclick="refreshAnalytics()" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">🔄 Refresh</button>
+        <div id="analyticsLastUpdate" style="color: #9ca3af; font-size: 0.875rem; margin-left: auto;">Loading...</div>
+    </div>
+    
+    <!-- Trend Analysis Charts -->
+    <div class="analytics-grid">
+        <div class="chart-container">
+            <div class="chart-title">
+                <span>📈</span>
+                Daily Report Trends
+            </div>
+            <canvas id="dailyTrendsChart" width="400" height="200"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <div class="chart-title">
+                <span>🎯</span>
+                AI Confidence Distribution
+            </div>
+            <canvas id="confidenceChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+    
+    <!-- Hotspot Prediction Grid -->
+    <div class="prediction-grid">
+        <div class="prediction-card">
+            <div class="section-title">
+                <span>🔥</span>
+                Emerging Hotspots
+            </div>
+            <div id="hotspotPredictions">Loading predictions...</div>
+        </div>
+        
+        <div class="prediction-card">
+            <div class="section-title">
+                <span>📊</span>
+                Status Flow Analysis
+            </div>
+            <canvas id="statusFlowChart" width="300" height="200"></canvas>
+        </div>
+        
+        <div class="prediction-card">
+            <div class="section-title">
+                <span>⚠️</span>
+                Hazard Type Trends
+            </div>
+            <canvas id="hazardTrendsChart" width="300" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+let adminMap;
+let adminMarkers = [];
+let clusterData = {{ clusters|tojson }};
+
+// Initialize the admin map
+document.addEventListener('DOMContentLoaded', function() {
+    initAdminMap();
+});
+
+function initAdminMap() {
+    // Initialize map centered on India
+    adminMap = L.map('adminMap').setView([20.5937, 78.9629], 5); // India center
+    
+    // Add tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18
+    }).addTo(adminMap);
+    
+    // Load cluster markers
+    loadClusterMarkers();
+}
+
+function loadClusterMarkers() {
+    // Clear existing markers
+    adminMarkers.forEach(marker => adminMap.removeLayer(marker));
+    adminMarkers = [];
+    
+    if (!clusterData || clusterData.length === 0) {
+        return;
+    }
+    
+    clusterData.forEach(cluster => {
+        if (!cluster.centroid_lat || !cluster.centroid_lng) return;
+        
+        // Determine marker size and color based on report count
+        let markerSize, markerColor, fontSize;
+        if (cluster.count >= 5) {
+            markerSize = 24;
+            markerColor = '#ef4444';
+            fontSize = '0.75rem';
+        } else if (cluster.count >= 2) {
+            markerSize = 20;
+            markerColor = '#f59e0b';
+            fontSize = '0.75rem';
+        } else {
+            markerSize = 16;
+            markerColor = '#10b981';
+            fontSize = '0.6rem';
+        }
+        
+        const marker = L.marker([cluster.centroid_lat, cluster.centroid_lng], {
+            icon: L.divIcon({
+                html: `<div style="background: ${markerColor}; color: white; border-radius: 50%; width: ${markerSize}px; height: ${markerSize}px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); font-size: ${fontSize};">${cluster.count}</div>`,
+                iconSize: [markerSize, markerSize],
+                className: 'cluster-marker'
+            })
+        }).addTo(adminMap);
+        
+        // Create detailed popup content
+        const severityCounts = {};
+        const hazardCounts = {};
+        const statusCounts = {};
+        let totalConfidence = 0;
+        let confidenceCount = 0;
+        
+        cluster.members.forEach(report => {
+            // Count severities
+            severityCounts[report.severity] = (severityCounts[report.severity] || 0) + 1;
+            // Count hazard types
+            hazardCounts[report.hazard_type] = (hazardCounts[report.hazard_type] || 0) + 1;
+            // Count statuses
+            statusCounts[report.status] = (statusCounts[report.status] || 0) + 1;
+            // Sum confidence scores
+            if (report.correlation_confidence) {
+                totalConfidence += report.correlation_confidence;
+                confidenceCount++;
+            }
+        });
+        
+        const avgConfidence = confidenceCount > 0 ? (totalConfidence / confidenceCount * 100).toFixed(1) : 'N/A';
+        
+        const popupContent = `
+            <div style="min-width: 300px; font-family: 'Inter', sans-serif;">
+                <h6 style="margin: 0 0 12px 0; color: #1f2937; font-weight: 700; font-size: 1.1rem;">
+                    🌍 ${cluster.location_name}
+                </h6>
+                
+                <div style="background: #f8fafc; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 0.875rem;">
+                        <div><strong>Reports:</strong> ${cluster.count}</div>
+                        <div><strong>Avg AI Confidence:</strong> ${avgConfidence}%</div>
+                        <div><strong>Time Range:</strong> ${cluster.count > 1 ? Math.ceil((new Date(cluster.last_report) - new Date(cluster.first_report)) / (1000 * 60 * 60 * 24)) + ' days' : '1 day'}</div>
+                        <div><strong>Active Hazards:</strong> ${cluster.hazard_types.length}</div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 12px;">
+                    <div style="font-weight: 600; margin-bottom: 6px; color: #374151; font-size: 0.9rem;">📈 Severity Distribution:</div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        ${Object.entries(severityCounts).map(([severity, count]) => 
+                            `<span style="background: ${severity === 'high' ? '#fee2e2' : severity === 'medium' ? '#fef3c7' : '#dcfce7'}; 
+                                      color: ${severity === 'high' ? '#dc2626' : severity === 'medium' ? '#d97706' : '#16a34a'}; 
+                                      padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                                ${severity}: ${count}
+                            </span>`
+                        ).join('')}
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 12px;">
+                    <div style="font-weight: 600; margin-bottom: 6px; color: #374151; font-size: 0.9rem;">🏷️ Hazard Types:</div>
+                    <div style="font-size: 0.875rem; color: #6b7280;">
+                        ${Object.entries(hazardCounts).map(([type, count]) => `${type} (${count})`).join(', ')}
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 12px;">
+                    <div style="font-weight: 600; margin-bottom: 6px; color: #374151; font-size: 0.9rem;">📋 Status Overview:</div>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        ${Object.entries(statusCounts).map(([status, count]) => 
+                            `<span style="background: ${status === 'pending' ? '#fef3c7' : status === 'reviewed' ? '#dbeafe' : '#dcfce7'}; 
+                                      color: ${status === 'pending' ? '#d97706' : status === 'reviewed' ? '#2563eb' : '#16a34a'}; 
+                                      padding: 2px 6px; border-radius: 10px; font-size: 0.75rem; font-weight: 500;">
+                                ${status}: ${count}
+                            </span>`
+                        ).join('')}
+                    </div>
+                </div>
+                
+                <div style="border-top: 1px solid #e5e7eb; padding-top: 10px; text-align: center;">
+                    <a href="/admin/reports" style="color: #2563eb; text-decoration: none; font-weight: 600; font-size: 0.875rem;">
+                        View Detailed Reports →
+                    </a>
+                </div>
+            </div>
+        `;
+        
+        marker.bindPopup(popupContent);
+        adminMarkers.push(marker);
+    });
+    
+    // Fit map to show all clusters if there are any
+    if (adminMarkers.length > 0) {
+        setTimeout(() => {
+            fitMapToClusters();
+        }, 100);
+    }
+}
+
+function fitMapToClusters() {
+    if (adminMarkers.length > 0) {
+        const group = new L.featureGroup(adminMarkers);
+        adminMap.fitBounds(group.getBounds().pad(0.1));
+    }
+}
+
+// Advanced Analytics System
+let analyticsCharts = {};
+let analyticsData = null;
+
+// Initialize analytics
+document.addEventListener('DOMContentLoaded', function() {
+    initAnalytics();
+});
+
+function initAnalytics() {
+    updateAnalytics();
+}
+
+function updateAnalytics() {
+    const timeRange = document.getElementById('analyticsTimeRange').value;
+    document.getElementById('analyticsLastUpdate').textContent = 'Loading...';
+    
+    fetch(`/admin/api/analytics?days=${timeRange}`)
+        .then(response => response.json())
+        .then(data => {
+            analyticsData = data;
+            renderAllCharts();
+            renderHotspotPredictions();
+            document.getElementById('analyticsLastUpdate').textContent = 
+                `Updated: ${new Date(data.generated_at).toLocaleString()}`;
+        })
+        .catch(error => {
+            console.error('Analytics error:', error);
+            document.getElementById('analyticsLastUpdate').textContent = 'Update failed';
+        });
+}
+
+function refreshAnalytics() {
+    updateAnalytics();
+}
+
+function renderAllCharts() {
+    if (!analyticsData) return;
+    
+    renderDailyTrendsChart();
+    renderConfidenceChart();
+    renderStatusFlowChart();
+    renderHazardTrendsChart();
+}
+
+function renderDailyTrendsChart() {
+    const ctx = document.getElementById('dailyTrendsChart').getContext('2d');
+    
+    if (analyticsCharts.dailyTrends) {
+        analyticsCharts.dailyTrends.destroy();
+    }
+    
+    analyticsCharts.dailyTrends = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: analyticsData.daily_trends.labels,
+            datasets: [{
+                label: 'Total Reports',
+                data: analyticsData.daily_trends.datasets.total_reports,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.3
+            }, {
+                label: 'High Confidence',
+                data: analyticsData.daily_trends.datasets.high_confidence,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                tension: 0.3
+            }, {
+                label: 'Resolved',
+                data: analyticsData.daily_trends.datasets.resolved,
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: { color: '#d1d5db' }
+                }
+            },
+            scales: {
+                x: { 
+                    ticks: { color: '#9ca3af' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                },
+                y: { 
+                    ticks: { color: '#9ca3af' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                }
+            }
+        }
+    });
+}
+
+function renderConfidenceChart() {
+    const ctx = document.getElementById('confidenceChart').getContext('2d');
+    
+    if (analyticsCharts.confidence) {
+        analyticsCharts.confidence.destroy();
+    }
+    
+    // Aggregate confidence distribution data
+    const confidenceData = {};
+    analyticsData.confidence_distribution.data.forEach(item => {
+        if (!confidenceData[item.confidence_range]) {
+            confidenceData[item.confidence_range] = 0;
+        }
+        confidenceData[item.confidence_range] += item.count;
+    });
+    
+    const labels = Object.keys(confidenceData);
+    const values = Object.values(confidenceData);
+    
+    analyticsCharts.confidence = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor: [
+                    '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: { color: '#d1d5db' },
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+function renderStatusFlowChart() {
+    const ctx = document.getElementById('statusFlowChart').getContext('2d');
+    
+    if (analyticsCharts.statusFlow) {
+        analyticsCharts.statusFlow.destroy();
+    }
+    
+    const flowData = analyticsData.status_transitions.data.slice(0, 8); // Top 8 transitions
+    const labels = flowData.map(item => `${item.old_status} → ${item.new_status}`);
+    const values = flowData.map(item => item.transition_count);
+    
+    analyticsCharts.statusFlow = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Transitions',
+                data: values,
+                backgroundColor: '#6366f1'
+            }]
+        },
+        options: {
+            responsive: true,
+            indexAxis: 'y',
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: { 
+                    ticks: { color: '#9ca3af' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                },
+                y: { 
+                    ticks: { color: '#9ca3af', font: { size: 10 } },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                }
+            }
+        }
+    });
+}
+
+function renderHazardTrendsChart() {
+    const ctx = document.getElementById('hazardTrendsChart').getContext('2d');
+    
+    if (analyticsCharts.hazardTrends) {
+        analyticsCharts.hazardTrends.destroy();
+    }
+    
+    // Aggregate hazard data by type
+    const hazardData = {};
+    analyticsData.hazard_trends.data.forEach(item => {
+        if (!hazardData[item.hazard_type]) {
+            hazardData[item.hazard_type] = 0;
+        }
+        hazardData[item.hazard_type] += item.count;
+    });
+    
+    const labels = Object.keys(hazardData);
+    const values = Object.values(hazardData);
+    
+    analyticsCharts.hazardTrends = new Chart(ctx, {
+        type: 'polarArea',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor: [
+                    '#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: { color: '#d1d5db' },
+                    position: 'bottom'
+                }
+            },
+            scales: {
+                r: {
+                    ticks: { color: '#9ca3af' },
+                    grid: { color: 'rgba(255, 255, 255, 0.2)' }
+                }
+            }
+        }
+    });
+}
+
+function renderHotspotPredictions() {
+    if (!analyticsData || !analyticsData.predictions.data) return;
+    
+    const container = document.getElementById('hotspotPredictions');
+    const predictions = analyticsData.predictions.data.slice(0, 10); // Top 10
+    
+    if (predictions.length === 0) {
+        container.innerHTML = '<p style="color: #9ca3af; text-align: center;">No prediction data available</p>';
+        return;
+    }
+    
+    let html = '';
+    predictions.forEach((pred, index) => {
+        const riskScore = (pred.last_week * 2 + pred.avg_confidence * pred.recent_reports);
+        let riskClass = 'risk-low';
+        if (riskScore > 20) riskClass = 'risk-high';
+        else if (riskScore > 10) riskClass = 'risk-medium';
+        
+        const trend = pred.last_week > pred.prev_week ? '📈' : 
+                     pred.last_week < pred.prev_week ? '📉' : '➡️';
+        
+        html += `
+            <div class="hotspot-item">
+                <div>
+                    <div style="font-weight: 600; color: #f9fafb;">
+                        ${pred.city}, ${pred.state}
+                    </div>
+                    <div style="font-size: 0.875rem; color: #9ca3af;">
+                        ${pred.recent_reports} reports • ${Math.round(pred.avg_confidence * 100)}% conf.
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div class="risk-score ${riskClass}">Score: ${riskScore.toFixed(1)}</div>
+                    <div style="font-size: 0.875rem; margin-top: 0.25rem;">${trend} Trend</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Enhanced Map Controls
+let heatmapMode = false;
+let currentRadius = 4;
+
+function updateClusterRadius() {
+    currentRadius = parseFloat(document.getElementById('clusterRadius').value);
+    // Re-cluster data with new radius and reload map
+    refreshMapData();
+}
+
+function toggleHeatmapView() {
+    heatmapMode = !heatmapMode;
+    const button = document.getElementById('heatmapToggle');
+    
+    if (heatmapMode) {
+        button.textContent = '🗺️ Cluster View';
+        button.style.background = 'rgba(239, 68, 68, 0.2)';
+        button.style.color = '#ef4444';
+        button.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+        showHeatmapView();
+    } else {
+        button.textContent = '🔥 Heatmap View';
+        button.style.background = 'rgba(16, 185, 129, 0.2)';
+        button.style.color = '#10b981';
+        button.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+        showClusterView();
+    }
+}
+
+function showHeatmapView() {
+    // Clear existing markers
+    adminMarkers.forEach(marker => adminMap.removeLayer(marker));
+    adminMarkers = [];
+    
+    // Add heat map visualization (simplified - you could use leaflet heatmap plugin)
+    if (clusterData && clusterData.length > 0) {
+        clusterData.forEach(cluster => {
+            if (!cluster.centroid_lat || !cluster.centroid_lng) return;
+            
+            // Create heat circles based on report intensity
+            const intensity = Math.min(cluster.count / 10, 1); // Normalize to 0-1
+            const radius = Math.max(cluster.count * 500, 200); // Minimum 200m radius
+            
+            const heatCircle = L.circle([cluster.centroid_lat, cluster.centroid_lng], {
+                radius: radius,
+                fillColor: intensity > 0.7 ? '#ef4444' : intensity > 0.4 ? '#f59e0b' : '#10b981',
+                color: 'transparent',
+                fillOpacity: Math.max(intensity * 0.4, 0.1),
+                weight: 0
+            }).addTo(adminMap);
+            
+            // Add popup with cluster info
+            heatCircle.bindPopup(`
+                <div style="font-family: 'Inter', sans-serif;">
+                    <h6 style="margin: 0 0 8px 0; color: #1f2937;">${cluster.location_name}</h6>
+                    <div>Reports: ${cluster.count}</div>
+                    <div>Intensity: ${(intensity * 100).toFixed(1)}%</div>
+                    <div>Confidence: ${(cluster.avg_confidence * 100).toFixed(1)}%</div>
+                </div>
+            `);
+            
+            adminMarkers.push(heatCircle);
+        });
+    }
+}
+
+function showClusterView() {
+    // Clear existing markers
+    adminMarkers.forEach(marker => adminMap.removeLayer(marker));
+    adminMarkers = [];
+    
+    // Reload standard cluster markers
+    loadClusterMarkers();
+}
+
+function refreshMapData() {
+    // In a real implementation, this would fetch fresh data with the current radius
+    console.log(`Refreshing map data with ${currentRadius}km radius...`);
+    
+    // For now, just reload existing markers
+    if (heatmapMode) {
+        showHeatmapView();
+    } else {
+        showClusterView();
+    }
+    
+    // Update analytics as well
+    updateAnalytics();
+}
+</script>
+{% endblock %}

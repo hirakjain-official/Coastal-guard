@@ -1,0 +1,620 @@
+{% extends "base_new.html" %}
+
+{% block title %}User Dashboard - Coastal Hazard Management{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        text-align: center;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+    
+    .stat-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+        opacity: 0.8;
+    }
+    
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #4ade80;
+        margin: 0;
+    }
+    
+    .stat-label {
+        color: #9ca3af;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+    
+    .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .main-content-grid {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .actions-column {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .reports-column {
+        min-height: 400px;
+    }
+    
+    .action-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+    
+    .action-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-3px);
+    }
+    
+    .action-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .action-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #f9fafb;
+        margin-bottom: 1rem;
+    }
+    
+    .action-description {
+        color: #9ca3af;
+        font-size: 0.875rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.4;
+    }
+    
+    .action-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+    }
+    
+    .action-button:hover {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .action-button.danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+    
+    .action-button.danger:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);
+    }
+    
+    .action-button.success {
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+    
+    .action-button.success:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+    }
+    
+    .action-button.full-width {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .action-card.compact {
+        padding: 1.5rem;
+        text-align: left;
+    }
+    
+    .action-card.compact .action-icon {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .action-card.compact .action-title {
+        font-size: 1.125rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .action-card.compact .action-description {
+        margin-bottom: 1.25rem;
+        font-size: 0.8125rem;
+    }
+    
+    .recent-reports {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #f9fafb;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .report-item {
+        border-left: 3px solid #4ade80;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 0 8px 8px 0;
+        transition: all 0.2s ease;
+    }
+    
+    .report-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+    }
+    
+    .report-title {
+        font-weight: 600;
+        color: #f9fafb;
+        margin-bottom: 0.5rem;
+    }
+    
+    .report-meta {
+        font-size: 0.875rem;
+        color: #9ca3af;
+        margin-bottom: 0.5rem;
+    }
+    
+    .report-status {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .status-pending {
+        background: rgba(251, 191, 36, 0.2);
+        color: #fbbf24;
+    }
+    
+    .status-reviewed {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3b82f6;
+    }
+    
+    .status-resolved {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+    }
+    
+    .no-reports {
+        text-align: center;
+        padding: 2rem;
+        color: #9ca3af;
+    }
+    
+    .no-reports-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.6;
+    }
+
+    @media (max-width: 768px) {
+        .actions-grid {
+            grid-template-columns: 1fr;
+        }
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .main-content-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        .actions-column {
+            order: 2;
+        }
+        .reports-column {
+            order: 1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <h1>🌊 Welcome, {{ session.username }}!</h1>
+        <p>Monitor coastal hazards and manage your incident reports</p>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value">{{ stats.total_reports }}</div>
+            <div class="stat-label">Total Reports</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-value">{{ stats.pending_reports }}</div>
+            <div class="stat-label">Pending</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value">{{ stats.resolved_reports }}</div>
+            <div class="stat-label">Resolved</div>
+        </div>
+    </div>
+    
+    <!-- Interactive Map Section (Top Priority) -->
+    <div id="map-section" class="recent-reports" style="margin-bottom: 2rem;">
+        <div class="section-title">
+            <span>🗺️</span>
+            Nearby Alerts & Incidents (4km radius)
+        </div>
+        
+        <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                    <div style="width: 12px; height: 12px; background: #ef4444; border-radius: 50%;"></div>
+                    <span style="color: #9ca3af;">High Severity</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                    <div style="width: 12px; height: 12px; background: #f59e0b; border-radius: 50%;"></div>
+                    <span style="color: #9ca3af;">Medium Severity</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                    <div style="width: 12px; height: 12px; background: #10b981; border-radius: 50%;"></div>
+                    <span style="color: #9ca3af;">Low Severity</span>
+                </div>
+            </div>
+            <button onclick="getCurrentLocation()" class="action-button" style="font-size: 0.75rem; padding: 0.5rem 1rem;">
+                📍 Find My Location
+            </button>
+        </div>
+        
+        <div id="userMap" style="height: 450px; width: 100%; border-radius: 8px; overflow: hidden;"></div>
+        
+        <div style="margin-top: 1rem; font-size: 0.875rem; color: #9ca3af; text-align: center;">
+            Click on markers to view incident details • Map shows reports from the last 30 days
+        </div>
+    </div>
+    
+    <!-- Main Content Grid -->
+    <div class="main-content-grid">
+        <!-- Quick Actions Column -->
+        <div class="actions-column">
+            <div class="section-title">
+                <span>⚡</span>
+                Quick Actions
+            </div>
+            
+            <div class="action-card compact">
+                <div class="action-icon">🚨</div>
+                <h4 class="action-title">Report Emergency</h4>
+                <p class="action-description">
+                    Report coastal flooding, storms, or hazards
+                </p>
+                <a href="{{ url_for('create_report') }}" class="action-button danger full-width">
+                    📝 Report Now
+                </a>
+            </div>
+            
+            <div class="action-card compact">
+                <div class="action-icon">📊</div>
+                <h4 class="action-title">My Reports</h4>
+                <p class="action-description">
+                    Track your submitted incident reports
+                </p>
+                <a href="{{ url_for('my_reports') }}" class="action-button success full-width">
+                    📋 View Reports
+                </a>
+            </div>
+        </div>
+        
+        <!-- Recent Reports Column -->
+        <div class="reports-column">
+            <div class="recent-reports">
+                <div class="section-title">
+                    <span>📋</span>
+                    Your Recent Reports
+                </div>
+                
+                {% if recent_reports %}
+                    {% for report in recent_reports %}
+                    <div class="report-item">
+                        <div class="report-title">{{ report.title }}</div>
+                        <div class="report-meta">
+                            {% if report.city and report.state %}
+                                📍 {{ report.city }}, {{ report.state }}
+                            {% endif %}
+                            {% if report.created_at %}
+                                • ⏰ {{ report.created_at[:19] }}
+                            {% endif %}
+                            • 🏷️ {{ report.hazard_type }}
+                        </div>
+                        <div class="report-status status-{{ report.status }}">
+                            {{ report.status|title }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if stats.total_reports > 5 %}
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <a href="{{ url_for('my_reports') }}" class="action-button">
+                            View All Reports →
+                        </a>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="no-reports">
+                        <div class="no-reports-icon">📝</div>
+                        <h3>No Reports Yet</h3>
+                        <p>You haven't submitted any hazard reports. Click "Report Now" to get started.</p>
+                        <a href="{{ url_for('create_report') }}" class="action-button danger" style="margin-top: 1rem;">
+                            📝 Submit Your First Report
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+let userMap;
+let userMarkers = [];
+let userLocation = null;
+let mapReports = {{ map_reports|safe }};
+
+// Initialize the map
+document.addEventListener('DOMContentLoaded', function() {
+    initUserMap();
+});
+
+function initUserMap() {
+    // Initialize map centered on a default location (you can change this)
+    userMap = L.map('userMap').setView([40.7128, -74.0060], 10); // Default to NYC
+    
+    // Add tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18
+    }).addTo(userMap);
+    
+    // Try to get user's location
+    getCurrentLocation();
+    
+    // Load nearby reports
+    loadNearbyReports();
+}
+
+function getCurrentLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            userLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+            
+            // Center map on user location
+            userMap.setView([userLocation.lat, userLocation.lng], 13);
+            
+            // Add user location marker
+            const userMarker = L.marker([userLocation.lat, userLocation.lng], {
+                icon: L.divIcon({
+                    html: '<div style="background: #3b82f6; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">📍</div>',
+                    iconSize: [20, 20],
+                    className: 'user-location-marker'
+                })
+            }).addTo(userMap);
+            
+            userMarker.bindPopup(`
+                <div style="text-align: center;">
+                    <strong>📍 Your Location</strong><br>
+                    <small>Lat: ${userLocation.lat.toFixed(4)}, Lng: ${userLocation.lng.toFixed(4)}</small>
+                </div>
+            `);
+            
+            // Add 4km radius circle
+            L.circle([userLocation.lat, userLocation.lng], {
+                color: '#3b82f6',
+                fillColor: '#3b82f6',
+                fillOpacity: 0.1,
+                radius: 4000 // 4km in meters
+            }).addTo(userMap).bindPopup('4km Alert Radius');
+            
+            // Reload reports to filter by distance
+            loadNearbyReports();
+            
+        }, function(error) {
+            console.warn('Geolocation error:', error.message);
+            // Fallback: try to load reports anyway
+            loadNearbyReports();
+        }, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 300000 // 5 minutes
+        });
+    } else {
+        console.warn('Geolocation not supported');
+        loadNearbyReports();
+    }
+}
+
+function loadNearbyReports() {
+    // Clear existing markers
+    userMarkers.forEach(marker => userMap.removeLayer(marker));
+    userMarkers = [];
+    
+    if (!mapReports || mapReports.length === 0) {
+        return;
+    }
+    
+    let nearbyReports = mapReports;
+    
+    // Filter reports within 4km if user location is available
+    if (userLocation) {
+        nearbyReports = mapReports.filter(report => {
+            if (!report.latitude || !report.longitude) return false;
+            
+            const distance = calculateDistance(
+                userLocation.lat, userLocation.lng,
+                report.latitude, report.longitude
+            );
+            
+            return distance <= 4; // 4km
+        });
+    }
+    
+    // Add markers for nearby reports
+    nearbyReports.forEach(report => {
+        if (!report.latitude || !report.longitude) return;
+        
+        const severityColors = {
+            'high': '#ef4444',
+            'medium': '#f59e0b',
+            'low': '#10b981'
+        };
+        
+        const color = severityColors[report.severity?.toLowerCase()] || '#f59e0b';
+        
+        const marker = L.marker([report.latitude, report.longitude], {
+            icon: L.divIcon({
+                html: `<div style="background: ${color}; color: white; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">⚠️</div>`,
+                iconSize: [16, 16],
+                className: 'report-marker'
+            })
+        }).addTo(userMap);
+        
+        // Create popup content
+        const distance = userLocation ? calculateDistance(
+            userLocation.lat, userLocation.lng,
+            report.latitude, report.longitude
+        ).toFixed(1) : 'Unknown';
+        
+        const popupContent = `
+            <div style="min-width: 200px;">
+                <h6 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600;">
+                    ${report.title || 'Incident Report'}
+                </h6>
+                <p style="margin: 0 0 8px 0; font-size: 12px; color: #6b7280; line-height: 1.3;">
+                    ${report.description ? report.description.substring(0, 100) + (report.description.length > 100 ? '...' : '') : 'No description'}
+                </p>
+                <div style="font-size: 11px; color: #9ca3af; line-height: 1.4;">
+                    <div><strong>Type:</strong> ${report.hazard_type || 'Unknown'}</div>
+                    <div><strong>Severity:</strong> <span style="color: ${color}; font-weight: 600;">${report.severity || 'Medium'}</span></div>
+                    <div><strong>Location:</strong> ${report.city || 'Unknown'}, ${report.state || ''}</div>
+                    ${userLocation ? `<div><strong>Distance:</strong> ${distance} km away</div>` : ''}
+                    <div><strong>Reported:</strong> ${report.created_at ? new Date(report.created_at).toLocaleDateString() : 'Unknown'}</div>
+                    ${report.correlation_confidence ? `<div><strong>AI Confidence:</strong> ${Math.round(report.correlation_confidence * 100)}%</div>` : ''}
+                </div>
+            </div>
+        `;
+        
+        marker.bindPopup(popupContent);
+        userMarkers.push(marker);
+    });
+    
+    // Update map info
+    updateMapInfo(nearbyReports.length);
+}
+
+function calculateDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+function updateMapInfo(reportCount) {
+    const mapSection = document.querySelector('#map-section .section-title');
+    if (mapSection) {
+        mapSection.innerHTML = `
+            <span>🗺️</span>
+            Nearby Alerts & Incidents (${reportCount} within 4km)
+        `;
+    }
+}
+
+function scrollToMap() {
+    document.getElementById('map-section').scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+    });
+    
+    // Refresh map display after scroll
+    setTimeout(() => {
+        if (userMap) {
+            userMap.invalidateSize();
+        }
+    }, 500);
+}
+</script>
+{% endblock %}

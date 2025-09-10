@@ -1,48 +1,74 @@
-# Core dependencies
-requests==2.31.0
-python-dotenv==1.0.0
-pandas==2.0.3
-numpy==1.24.3
-sqlalchemy==2.0.19
-psycopg2-binary==2.9.7
+# =============================================================================
+# Coastal Hazard Management System - Requirements
+# Latest dependencies with duplicates removed
+# =============================================================================
 
-# API clients
-tweepy==4.14.0
-rapidapi-python==1.0.0
+# Core Python Libraries
+requests>=2.31.0
+python-dotenv>=1.0.0
 
-# AI/ML
-openai==0.28.1
-deepseek-api==0.1.0
-transformers==4.33.2
-torch==2.0.1
-scikit-learn==1.3.0
+# Flask Web Framework (Main App)
+Flask>=2.3.3
+Werkzeug>=2.3.7
+Jinja2>=3.1.2
+Flask-CORS>=4.0.0
 
-# Geolocation and mapping
-geopy==2.3.0
-shapely==2.0.1
-geopandas==0.13.2
+# Database Support
+sqlalchemy>=2.0.19
+# SQLite is built-in to Python, no separate package needed
+# Optional PostgreSQL support if needed:
+# psycopg2-binary>=2.9.7
 
-# Language processing
-langdetect==1.0.9
-googletrans==3.1.0a0
-polyglot==16.7.4
+# Data Processing (minimal, only where actually used)
+pandas>=2.0.3
 
-# Scheduling and async
-schedule==1.2.0
-celery==5.3.1
-redis==4.6.0
-asyncio==3.4.3
+# Async HTTP Client
+aiohttp>=3.9.0
 
-# Logging and monitoring
-loguru==0.7.0
-prometheus-client==0.17.1
+# Language Detection & Geolocation
+langdetect>=1.0.9
+geopy>=2.3.0
 
-# Testing
-pytest==7.4.0
-pytest-asyncio==0.21.1
-pytest-mock==3.11.1
+# Social Media APIs
+tweepy>=4.14.0
+# Note: rapidapi-python not actively maintained, using direct requests
 
-# Development
-black==23.7.0
-flake8==6.0.0
-pre-commit==3.3.3
+# Scheduling (lightweight alternative to celery)
+schedule>=1.2.0
+# Note: asyncio is built-in to Python 3.7+, no separate package needed
+
+# Alert System
+twilio>=8.10.0
+
+# Logging
+loguru>=0.7.0
+
+# Development & Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.1
+black>=23.7.0
+flake8>=6.0.0
+
+# =============================================================================
+# REMOVED PACKAGES (not used in current codebase):
+# - numpy (not directly imported anywhere)
+# - openai (using OpenRouter API instead)
+# - deepseek-api (using OpenRouter API instead)
+# - transformers & torch (heavy ML packages not used)
+# - scikit-learn (not used)
+# - shapely & geopandas (geospatial packages not used)
+# - googletrans & polyglot (complex language packages not used)
+# - celery & redis (heavyweight task queue not used)
+# - prometheus-client (monitoring not implemented)
+# - pytest-mock (not used in tests)
+# - pre-commit (development tool, not runtime dependency)
+# =============================================================================
+
+# Optional packages for extended functionality:
+# Uncomment if you need them:
+# numpy>=1.24.3                    # For numerical computations
+# scikit-learn>=1.3.0              # For ML features
+# googletrans>=3.1.0a0             # For advanced translation
+# redis>=4.6.0                     # For caching/session storage
+# celery>=5.3.1                    # For background task processing
+# psycopg2-binary>=2.9.7           # For PostgreSQL database

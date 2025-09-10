@@ -8,7 +8,8 @@ import os
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
 import pandas as pd
-from langdetect import detect, LangDetectError
+from langdetect import detect
+from langdetect.lang_detect_exception import LangDetectException
 from geopy.geocoders import Nominatim
 from loguru import logger
 
@@ -194,7 +195,7 @@ class PreprocessingService:
             try:
                 detected_lang = detect(text)
                 post['detected_language'] = detected_lang
-            except LangDetectError:
+            except LangDetectException:
                 post['detected_language'] = 'unknown'
             
             # Update cleaned text

@@ -1,0 +1,139 @@
+{
+  "en": {
+    "brand": "Coastal Guard",
+    "language_changed": "Language changed successfully!",
+    "nav": {
+      "admin_dashboard": "Admin Dashboard",
+      "manage_reports": "Manage Reports",
+      "alerts": "Alerts",
+      "timeline": "Timeline",
+      "agent_control": "Agent Control",
+      "dashboard": "Dashboard",
+      "report_hazard": "Report Hazard",
+      "my_reports": "My Reports",
+      "login": "Login",
+      "signup": "Sign Up",
+      "logout": "Logout"
+    },
+    "reports": {
+      "title": "Reports Management",
+      "subtitle": "Geographic clustering and analysis of coastal hazard reports",
+      "filters": {
+        "status_filter": "Status Filter",
+        "time_range": "Time Range",
+        "all": "All Reports",
+        "pending": "Pending",
+        "reviewed": "Reviewed",
+        "resolved": "Resolved",
+        "last_24h": "Last 24 Hours",
+        "last_3d": "Last 3 Days",
+        "last_7d": "Last 7 Days",
+        "last_30d": "Last 30 Days",
+        "showing_clusters": "Showing {count} clusters"
+      },
+      "no_clusters": {
+        "title": "No Report Clusters Found",
+        "hint": "No reports match your current filters. Try adjusting the time range or status filter."
+      },
+      "export": {
+        "csv": "Export CSV",
+        "excel": "Export Excel",
+        "pdf": "Situation Report (PDF)"
+      },
+      "cluster": {
+        "reports": "{count} reports",
+        "avg_conf": "{percent}% avg confidence"
+      },
+      "report": {
+        "view_details": "View Details",
+        "send_alert": "Send Alert",
+        "location_not_specified": "Location not specified"
+      }
+    }
+  },
+  "hi": {
+    "brand": "कोस्टल गार्ड",
+    "language_changed": "भाषा सफलतापूर्वक बदल दी गई!",
+    "nav": {
+      "admin_dashboard": "एडमिन डैशबोर्ड",
+      "manage_reports": "रिपोर्ट प्रबंधन",
+      "alerts": "अलर्ट्स",
+      "timeline": "टाइमलाइन",
+      "agent_control": "एजेंट नियंत्रण",
+      "dashboard": "डैशबोर्ड",
+      "report_hazard": "खतरे की रिपोर्ट",
+      "my_reports": "मेरी रिपोर्ट्स",
+      "login": "लॉगिन",
+      "signup": "साइन अप",
+      "logout": "लॉगआउट"
+    },
+    "reports": {
+      "title": "रिपोर्ट प्रबंधन",
+      "subtitle": "तटीय खतरों की रिपोर्ट का भौगोलिक क्लस्टरिंग और विश्लेषण",
+      "filters": {
+        "status_filter": "स्थिति फ़िल्टर",
+        "time_range": "समय सीमा",
+        "all": "सभी रिपोर्ट्स",
+        "pending": "लंबित",
+        "reviewed": "समीक्षित",
+        "resolved": "समाधान किया",
+        "last_24h": "पिछले 24 घंटे",
+        "last_3d": "पिछले 3 दिन",
+        "last_7d": "पिछले 7 दिन",
+        "last_30d": "पिछले 30 दिन",
+        "showing_clusters": "{count} क्लस्टर्स दिखाए जा रहे हैं"
+      },
+      "no_clusters": {
+        "title": "कोई रिपोर्ट क्लस्टर नहीं मिला",
+        "hint": "आपकी वर्तमान फ़िल्टर से कोई रिपोर्ट मेल नहीं खाती। समय सीमा या स्थिति फ़िल्टर समायोजित करें।"
+      },
+      "export": {
+        "csv": "CSV निर्यात",
+        "excel": "एक्सेल निर्यात",
+        "pdf": "स्थिति रिपोर्ट (PDF)"
+      },
+      "cluster": {
+        "reports": "{count} रिपोर्ट्स",
+        "avg_conf": "औसत विश्वास {percent}%"
+      },
+      "report": {
+        "view_details": "विवरण देखें",
+        "send_alert": "अलर्ट भेजें",
+        "location_not_specified": "स्थान निर्दिष्ट नहीं"
+      }
+    }
+  },
+  "ta": {
+    "brand": "கோஸ்டல் கார்ட்",
+    "nav": {
+      "admin_dashboard": "நிர்வாக டாஷ்போர்ட்",
+      "manage_reports": "அறிக்கைகள் நிர்வாகம்",
+      "alerts": "எச்சரிக்கைகள்",
+      "timeline": "காலவரிசை",
+      "agent_control": "ஏஜென்ட் கட்டுப்பாடு",
+      "dashboard": "டாஷ்போர்ட்",
+      "report_hazard": "அபாயத்தை புகார் செய்யவும்",
+      "my_reports": "என் அறிக்கைகள்",
+      "login": "உள்நுழைக",
+      "signup": "பதிவு செய்ய",
+      "logout": "வெளியேறு"
+    }
+  },
+  "te": {
+    "brand": "తీర సంరక్షకులు",
+    "nav": {
+      "admin_dashboard": "నిర్వాహక డాష్‌బోర్డ్",
+      "manage_reports": "రిపోర్టుల నిర్వహణ",
+      "alerts": "హెచ్చరికలు",
+      "timeline": "టైమ్‌లైన్",
+      "agent_control": "ఏజెంట్ నియంత్రణ",
+      "dashboard": "డాష్‌బోర్డ్",
+      "report_hazard": "ప్రమాదాన్ని నివేదించండి",
+      "my_reports": "నా నివేదికలు",
+      "login": "లాగిన్",
+      "signup": "సైన్ అప్",
+      "logout": "లాగ్ అవుట్"
+    }
+  }
+}
+

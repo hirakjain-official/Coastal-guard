@@ -1,0 +1,385 @@
+{% extends "base_new.html" %}
+
+{% block title %}Reports Management - Coastal Hazard Management{% endblock %}
+
+{% block extra_head %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        text-align: center;
+    }
+    
+    .filters-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: center;
+    }
+    
+    .filter-group label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #d1d5db;
+    }
+    
+    .filter-group select, .filter-group input {
+        width: 100%;
+        padding: 0.75rem;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: #fff;
+        font-size: 0.875rem;
+    }
+    
+    .clusters-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+    
+    .cluster-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+    
+    .cluster-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .cluster-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    
+    .cluster-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #f9fafb;
+        margin: 0;
+    }
+    
+    .cluster-count {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3b82f6;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    
+    .cluster-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+        color: #9ca3af;
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .reports-list {
+        margin-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 1rem;
+    }
+    
+    .report-item {
+        background: rgba(255, 255, 255, 0.03);
+        border-left: 3px solid #4ade80;
+        border-radius: 0 8px 8px 0;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        transition: all 0.2s ease;
+    }
+    
+    .report-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+    }
+    
+    .report-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+    }
+    
+    .report-title {
+        font-weight: 600;
+        color: #f9fafb;
+        margin: 0;
+    }
+    
+    .report-badges {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .badge-confidence {
+        background: rgba(74, 222, 128, 0.2);
+        color: #4ade80;
+    }
+    
+    .badge-severity {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+    }
+    
+    .badge-status {
+        background: rgba(251, 191, 36, 0.2);
+        color: #fbbf24;
+    }
+    
+    .report-meta {
+        font-size: 0.875rem;
+        color: #9ca3af;
+        margin-bottom: 0.5rem;
+    }
+    
+    .report-description {
+        font-size: 0.875rem;
+        color: #d1d5db;
+        line-height: 1.4;
+        margin-bottom: 0.5rem;
+    }
+    
+    .no-clusters {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #9ca3af;
+    }
+    
+    .no-clusters-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.6;
+    }
+    
+    .export-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .export-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+    }
+    
+    .export-btn:hover {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+    }
+    
+    .export-btn.pdf {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+    
+    .export-btn.pdf:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);
+    }
+    
+    @media (max-width: 768px) {
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+        .cluster-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+        .report-header {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1>📊 {{ t('reports.title') }}</h1>
+        <p>{{ t('reports.subtitle') }}</p>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filters-card">
+        <form method="GET" class="filter-grid">
+            <div class="filter-group">
+                <label for="status">{{ t('reports.filters.status_filter') }}</label>
+                <select name="status" id="status" onchange="this.form.submit()">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>{{ t('reports.filters.all') }}</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>{{ t('reports.filters.pending') }}</option>
+                    <option value="reviewed" {% if status_filter == 'reviewed' %}selected{% endif %}>{{ t('reports.filters.reviewed') }}</option>
+                    <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>{{ t('reports.filters.resolved') }}</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="days">{{ t('reports.filters.time_range') }}</label>
+                <select name="days" id="days" onchange="this.form.submit()">
+                    <option value="1" {% if days_filter == 1 %}selected{% endif %}>{{ t('reports.filters.last_24h') }}</option>
+                    <option value="3" {% if days_filter == 3 %}selected{% endif %}>{{ t('reports.filters.last_3d') }}</option>
+                    <option value="7" {% if days_filter == 7 %}selected{% endif %}>{{ t('reports.filters.last_7d') }}</option>
+                    <option value="30" {% if days_filter == 30 %}selected{% endif %}>{{ t('reports.filters.last_30d') }}</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>&nbsp;</label>
+                <div style="color: #9ca3af; font-size: 0.875rem;">
+                    Showing {{ clusters|length }} clusters
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Export Actions -->
+    <div class="export-actions">
+        <a href="{{ url_for('admin_export_reports_csv') }}?status={{ status_filter }}&days={{ days_filter }}&hazard=all" class="export-btn">
+            📊 {{ t('reports.export.csv') }}
+        </a>
+        <a href="{{ url_for('admin_export_reports_excel') }}?status={{ status_filter }}&days={{ days_filter }}&hazard=all" class="export-btn" style="background: linear-gradient(135deg, #10b981, #059669);">
+            📈 {{ t('reports.export.excel') }}
+        </a>
+        <a href="{{ url_for('admin_export_situation_report_pdf') }}?status={{ status_filter }}&days={{ days_filter }}&hazard=all" class="export-btn pdf">
+            📄 {{ t('reports.export.pdf') }}
+        </a>
+    </div>
+    
+    <!-- Clusters -->
+    <div class="clusters-grid">
+        {% if clusters %}
+            {% for cluster in clusters %}
+            <div class="cluster-card">
+                <div class="cluster-header">
+                    <h3 class="cluster-title">{{ cluster.location_name }}</h3>
+                    <div class="cluster-count">{{ cluster.count }} reports</div>
+                </div>
+                
+                <div class="cluster-meta">
+                    <div class="meta-item">
+                        <span>🎯</span>
+                        <span>{{ (cluster.avg_confidence * 100)|round|int }}% avg confidence</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>🏷️</span>
+                        <span>{{ cluster.hazard_types|join(', ') }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>📊</span>
+                        <span>{{ cluster.severities|join(', ') }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>📅</span>
+                        <span>{{ cluster.first_report[:10] if cluster.first_report else 'N/A' }} to {{ cluster.last_report[:10] if cluster.last_report else 'N/A' }}</span>
+                    </div>
+                </div>
+                
+                <div class="reports-list">
+                    {% for report in cluster.members %}
+                    <div class="report-item">
+                        <div class="report-header">
+                            <h4 class="report-title">{{ report.title }}</h4>
+                            <div class="report-badges">
+                                {% if report.correlation_confidence %}
+                                    <span class="badge badge-confidence">
+                                        {{ (report.correlation_confidence * 100)|round|int }}%
+                                    </span>
+                                {% endif %}
+                                <span class="badge badge-severity">{{ report.severity|title }}</span>
+                                <span class="badge badge-status">{{ report.status|title }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="report-meta">
+                            📍 {{ report.address or 'Location not specified' }}
+                            {% if report.user_name %}
+                                • 👤 {{ report.user_name }}
+                            {% endif %}
+                            {% if report.created_at %}
+                                • ⏰ {{ report.created_at[:19] }}
+                            {% endif %}
+                        </div>
+                        
+                        {% if report.description %}
+                            <div class="report-description">
+                                {{ report.description[:200] }}{% if report.description|length > 200 %}...{% endif %}
+                            </div>
+                        {% endif %}
+                        
+                        {% if report.id %}
+                            <div style="margin-top: 0.75rem; display: flex; gap: 1rem; align-items: center;">
+                                <a href="{{ url_for('admin_report_detail', report_id=report.id) }}" 
+                                   style="color: #3b82f6; text-decoration: none; font-size: 0.875rem;">
+                                    View Details →
+                                </a>
+                                <a href="{{ url_for('admin_alert_confirm', report_id=report.id) }}" 
+                                   style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                    🚨 Send Alert
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-clusters">
+                <div class="no-clusters-icon">🗺️</div>
+                <h3>No Report Clusters Found</h3>
+                <p>No reports match your current filters. Try adjusting the time range or status filter.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

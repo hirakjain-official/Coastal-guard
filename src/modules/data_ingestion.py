@@ -10,6 +10,10 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 from loguru import logger
 import tweepy
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 class DataIngestionService:
     """Handles data ingestion from social media platforms."""
@@ -17,7 +21,7 @@ class DataIngestionService:
     def __init__(self):
         """Initialize the data ingestion service with API credentials."""
         self.rapidapi_key = os.getenv('RAPIDAPI_KEY')
-        self.rapidapi_host = os.getenv('RAPIDAPI_HOST', 'twitter154.p.rapidapi.com')
+        self.rapidapi_host = os.getenv('RAPIDAPI_HOST', 'twitter-api47.p.rapidapi.com')
         self.twitter_bearer_token = os.getenv('TWITTER_BEARER_TOKEN')
         
         # Initialize Twitter API client
@@ -103,6 +107,13 @@ class DataIngestionService:
             all_posts.extend(twitter_posts)
             logger.info(f"Fetched {len(twitter_posts)} posts from Twitter API")
         
+        # If no posts were fetched from any API, log the issue
+        if len(all_posts) == 0:
+            if not self.rapidapi_key and not self.twitter_client:
+                logger.warning("No API credentials configured - no posts can be fetched")
+            else:
+                logger.warning(f"No posts fetched despite having API credentials - RapidAPI: {'Yes' if self.rapidapi_key else 'No'}, Twitter: {'Yes' if self.twitter_client else 'No'}")
+        
         logger.info(f"Total posts fetched: {len(all_posts)}")
         return all_posts
     
@@ -119,22 +130,12 @@ class DataIngestionService:
             'X-RapidAPI-Host': self.rapidapi_host
         }
         
-        # Build search query with hashtags and keywords
-        query_parts = []
-        query_parts.extend(self.hashtags[:10])  # Limit to avoid query length issues
-        query_parts.extend([f'"{kw}"' for kw in self.keywords[:10]])
-        search_query = ' OR '.join(query_parts)
-        
-        url = f"https://{self.rapidapi_host}/search/search"
+        url = f"https://{self.rapidapi_host}/v2/search"
         
         params = {
-            'query': search_query,
-            'section': 'top',  # or 'latest'
-            'min_replies': '1',
-            'min_faves': '1',
-            'start_date': start_time.strftime('%Y-%m-%d'),
-            'end_date': end_time.strftime('%Y-%m-%d'),
-            'language': 'en'
+            "query": '#flood OR #tsunami OR #highwaves OR #cyclone OR #storm OR #flooding OR #heavyrain OR #waterlogging OR #surge OR #बाढ़ OR "flood" OR "flooding" OR "waterlogged" OR "tsunami" OR "high waves" OR "cyclone" OR "storm surge" OR "heavy rain" OR "water level rising" OR "coastal flooding"',
+            "type": "Latest",
+            "max_results": "100"
         }
         
         try:
@@ -143,13 +144,16 @@ class DataIngestionService:
                     if response.status == 200:
                         data = await response.json()
                         
-                        if 'results' in data:
-                            for tweet in data['results']:
+                        if 'tweets' in data:
+                            for tweet in data['tweets']:
                                 post = self._format_rapidapi_post(tweet)
                                 if self._is_india_relevant(post):
                                     posts.append(post)
                     else:
-                        logger.error(f"RapidAPI request failed: {response.status}")
+                        error_text = await response.text()
+                        logger.error(f"RapidAPI request failed: {response.status} - {error_text}")
+                        logger.error(f"Request URL: {url}")
+                        logger.error(f"Request params: {params}")
                         
         except Exception as e:
             logger.error(f"Error fetching from RapidAPI: {str(e)}")
@@ -191,19 +195,53 @@ class DataIngestionService:
     
     def _format_rapidapi_post(self, tweet_data: Dict) -> Dict[str, Any]:
         """Format a RapidAPI tweet into our standard post format."""
-        return {
-            'id': tweet_data.get('tweet_id'),
-            'text': tweet_data.get('text', ''),
-            'created_at': tweet_data.get('created_at'),
-            'author_id': tweet_data.get('user_id'),
-            'author_username': tweet_data.get('username'),
-            'retweet_count': tweet_data.get('retweet_count', 0),
-            'like_count': tweet_data.get('favorite_count', 0),
-            'geo': tweet_data.get('geo'),
-            'language': tweet_data.get('lang', 'unknown'),
-            'source': 'rapidapi_twitter',
-            'raw_data': tweet_data
-        }
+        try:
+            # Extract tweet data from nested structure
+            content = tweet_data.get('content', {})
+            item_content = content.get('itemContent', {})
+            tweet_results = item_content.get('tweet_results', {})
+            result = tweet_results.get('result', {})
+            
+            # Get tweet text from legacy field
+            tweet_text = result.get('legacy', {}).get('full_text', '') or result.get('legacy', {}).get('text', '')
+            
+            # Get user info
+            user_results = result.get('core', {}).get('user_results', {})
+            user_result = user_results.get('result', {})
+            user_legacy = user_result.get('legacy', {})
+            
+            # Get metrics
+            legacy = result.get('legacy', {})
+            
+            return {
+                'id': tweet_data.get('entryId', ''),
+                'text': tweet_text,
+                'created_at': legacy.get('created_at', ''),
+                'author_id': user_result.get('rest_id', ''),
+                'author_username': user_legacy.get('screen_name', ''),
+                'retweet_count': legacy.get('retweet_count', 0),
+                'like_count': legacy.get('favorite_count', 0),
+                'geo': legacy.get('geo'),
+                'language': legacy.get('lang', 'unknown'),
+                'source': 'rapidapi_twitter',
+                'raw_data': tweet_data
+            }
+        except Exception as e:
+            logger.error(f"Error formatting RapidAPI post: {str(e)} - Data: {tweet_data}")
+            # Return basic structure with fallback values
+            return {
+                'id': tweet_data.get('entryId', 'unknown'),
+                'text': str(tweet_data.get('content', '')),
+                'created_at': '',
+                'author_id': '',
+                'author_username': '',
+                'retweet_count': 0,
+                'like_count': 0,
+                'geo': None,
+                'language': 'unknown',
+                'source': 'rapidapi_twitter',
+                'raw_data': tweet_data
+            }
     
     def _format_twitter_post(self, tweet) -> Dict[str, Any]:
         """Format a Twitter API v2 tweet into our standard post format."""
@@ -233,32 +271,44 @@ class DataIngestionService:
         Returns:
             True if post is India-relevant
         """
-        # Check geo-location if available
-        if post.get('geo'):
-            geo = post['geo']
-            if isinstance(geo, dict) and 'coordinates' in geo:
-                coords = geo['coordinates']
-                if (self.india_bbox['south'] <= coords[1] <= self.india_bbox['north'] and
-                    self.india_bbox['west'] <= coords[0] <= self.india_bbox['east']):
+        try:
+            # Check geo-location if available
+            if post.get('geo'):
+                geo = post['geo']
+                if isinstance(geo, dict) and 'coordinates' in geo:
+                    coords = geo['coordinates']
+                    if isinstance(coords, (list, tuple)) and len(coords) >= 2:
+                        if (self.india_bbox['south'] <= coords[1] <= self.india_bbox['north'] and
+                            self.india_bbox['west'] <= coords[0] <= self.india_bbox['east']):
+                            return True
+            
+            # Check text content for Indian city/state mentions
+            text_value = post.get('text', '')
+            # Ensure text is a string before calling .lower()
+            if not isinstance(text_value, str):
+                logger.warning(f"Post text is not a string: {type(text_value)} - {text_value}")
+                return False
+            
+            text = text_value.lower()
+            indian_locations = [
+                'mumbai', 'delhi', 'bangalore', 'hyderabad', 'ahmedabad', 'chennai',
+                'kolkata', 'pune', 'jaipur', 'lucknow', 'kanpur', 'nagpur',
+                'visakhapatnam', 'vizag', 'bhubaneswar', 'kochi', 'kozhikode',
+                'thiruvananthapuram', 'goa', 'panaji', 'gujarat', 'maharashtra',
+                'karnataka', 'tamil nadu', 'kerala', 'andhra pradesh', 'telangana',
+                'west bengal', 'odisha', 'rajasthan', 'uttar pradesh', 'bihar',
+                'jharkhand', 'chhattisgarh', 'madhya pradesh', 'haryana', 'punjab',
+                'himachal pradesh', 'uttarakhand', 'jammu', 'kashmir', 'assam',
+                'manipur', 'meghalaya', 'tripura', 'mizoram', 'nagaland', 'arunachal pradesh',
+                'india', 'indian', 'भारत', 'हिन्दुस्तान'
+            ]
+            
+            for location in indian_locations:
+                if location in text:
                     return True
-        
-        # Check text content for Indian city/state mentions
-        text = post.get('text', '').lower()
-        indian_locations = [
-            'mumbai', 'delhi', 'bangalore', 'hyderabad', 'ahmedabad', 'chennai',
-            'kolkata', 'pune', 'jaipur', 'lucknow', 'kanpur', 'nagpur',
-            'visakhapatnam', 'vizag', 'bhubaneswar', 'kochi', 'kozhikode',
-            'thiruvananthapuram', 'goa', 'panaji', 'gujarat', 'maharashtra',
-            'karnataka', 'tamil nadu', 'kerala', 'andhra pradesh', 'telangana',
-            'west bengal', 'odisha', 'rajasthan', 'uttar pradesh', 'bihar',
-            'jharkhand', 'chhattisgarh', 'madhya pradesh', 'haryana', 'punjab',
-            'himachal pradesh', 'uttarakhand', 'jammu', 'kashmir', 'assam',
-            'manipur', 'meghalaya', 'tripura', 'mizoram', 'nagaland', 'arunachal pradesh',
-            'india', 'indian', 'भारत', 'हिन्दुस्तान'
-        ]
-        
-        for location in indian_locations:
-            if location in text:
-                return True
-        
-        return False
+            
+            return False
+            
+        except Exception as e:
+            logger.error(f"Error in _is_india_relevant: {str(e)} - Post: {post}")
+            return False

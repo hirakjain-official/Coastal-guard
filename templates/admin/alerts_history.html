@@ -1,0 +1,100 @@
+{% extends "base_new.html" %}
+
+{% block title %}Alerts History - Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <h1>📣 Alerts History</h1>
+    <p class="text-secondary">Overview of all alert broadcasts sent by administrators.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-content">
+      <form method="get" class="grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+        <div>
+          <label class="form-label">Time Range (days)</label>
+          <input type="number" name="days" class="form-input" value="{{ days_filter }}" min="1" max="90">
+        </div>
+        <div>
+          <label class="form-label">Alert Type</label>
+          <select name="alert_type" class="form-select">
+            <option value="all" {% if alert_type_filter=='all' %}selected{% endif %}>All</option>
+            <option value="sms" {% if alert_type_filter=='sms' %}selected{% endif %}>SMS</option>
+            <option value="voice" {% if alert_type_filter=='voice' %}selected{% endif %}>Voice</option>
+            <option value="both" {% if alert_type_filter=='both' %}selected{% endif %}>Both</option>
+          </select>
+        </div>
+        <div style="display:flex; align-items:flex-end;">
+          <button class="btn btn-primary">Apply Filters</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="grid mt-4" style="grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Recent Broadcasts</h2>
+      </div>
+      <div class="card-content">
+        {% if alerts %}
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Report</th>
+                <th>Type</th>
+                <th>Recipients</th>
+                <th>Success</th>
+                <th>Failed</th>
+                <th>Admin</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in alerts %}
+              <tr>
+                <td>{{ a.created_at }}</td>
+                <td>
+                  <div><strong>{{ a.report_title }}</strong></div>
+                  <div class="text-secondary">{{ a.hazard_type }} — {{ a.city }}, {{ a.state }}</div>
+                </td>
+                <td>{{ a.alert_type|upper }}</td>
+                <td>{{ a.recipients_count }}</td>
+                <td class="text-success">{{ a.successful_count }}</td>
+                <td class="text-danger">{{ a.failed_count }}</td>
+                <td>{{ a.admin_name }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="text-secondary">No alerts have been sent in this period.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Summary</h2>
+      </div>
+      <div class="card-content">
+        {% if stats %}
+        <ul>
+          <li><strong>Total Broadcasts:</strong> {{ stats.total_broadcasts or 0 }}</li>
+          <li><strong>Total Recipients:</strong> {{ stats.total_recipients or 0 }}</li>
+          <li class="text-success"><strong>Total Success:</strong> {{ stats.total_successful or 0 }}</li>
+          <li class="text-danger"><strong>Total Failed:</strong> {{ stats.total_failed or 0 }}</li>
+          <li><strong>SMS:</strong> {{ stats.sms_broadcasts or 0 }}</li>
+          <li><strong>Voice:</strong> {{ stats.voice_broadcasts or 0 }}</li>
+          <li><strong>Both:</strong> {{ stats.both_broadcasts or 0 }}</li>
+        </ul>
+        {% else %}
+        <p class="text-secondary">No data available.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,153 @@
+{% extends "base_new.html" %}
+
+{% block title %}Confirm Alert - Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <h1>🚨 Confirm Alert Broadcast</h1>
+    <p class="text-secondary">Review the report and confirm sending SMS and/or Voice call alerts.</p>
+  </div>
+
+  {% if not twilio_available %}
+  <div class="alert alert-danger">
+    Twilio is not configured. Please set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER in .env.
+  </div>
+  {% endif %}
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Report Details</h2>
+        <p class="card-subtitle">ID #{{ report.id }} • {{ report.hazard_type }} • {{ report.severity }}</p>
+      </div>
+      <div class="card-content">
+        <p><strong>Title:</strong> {{ report.title }}</p>
+        <p><strong>Description:</strong> {{ report.description }}</p>
+        <p><strong>Location:</strong> {{ report.address or '' }} {{ report.city }}, {{ report.state }}</p>
+        <p><strong>AI Confidence:</strong> {{ '%.0f' % ((report.correlation_confidence or 0) * 100) }}%</p>
+        <div class="mt-3">
+          <a href="{{ url_for('admin_report_detail', report_id=report.id) }}" class="btn btn-secondary">View Full Analysis</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Compose Alert</h2>
+        <p class="card-subtitle">Customize the alert message to be sent</p>
+      </div>
+      <div class="card-content">
+        <div class="form-group">
+          <label class="form-label">Alert Type</label>
+          <div style="display:flex; gap:1rem;">
+            <label><input type="radio" name="alert_type" value="sms" checked> SMS</label>
+            <label><input type="radio" name="alert_type" value="voice"> Voice Call</label>
+            <label><input type="radio" name="alert_type" value="both"> Both</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Message</label>
+          <textarea id="message_content" class="form-input" rows="6">{{ suggested_message }}</textarea>
+          <small class="form-help">A clear call-to-action and location helps recipients respond appropriately.</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Recipients</label>
+          <div class="card" style="max-height: 260px; overflow: auto;">
+            <div class="card-content">
+              {% if alert_users %}
+                {% for u in alert_users %}
+                  <label style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.35rem;">
+                    <input type="checkbox" name="recipient" value="{{ u.id }}" checked>
+                    <span>{{ u.name }} — {{ u.phone_number }} <span class="text-secondary">({{ u.alert_preferences or 'sms,voice' }})</span></span>
+                  </label>
+                {% endfor %}
+              {% else %}
+                <p class="text-secondary">No users with phone numbers registered yet.</p>
+              {% endif %}
+            </div>
+          </div>
+          <small class="form-help">Uncheck to exclude specific recipients. Leave all checked to notify everyone.</small>
+        </div>
+
+        <div class="mt-3">
+          <button id="sendAlertBtn" class="btn btn-primary" {% if not twilio_available %}disabled{% endif %}>Send Alert</button>
+          <a href="{{ url_for('admin_reports') }}" class="btn">Cancel</a>
+        </div>
+
+        <div id="resultBox" class="mt-3" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <div class="card-header">
+      <h2 class="card-title">Previous Alerts for this Report</h2>
+    </div>
+    <div class="card-content">
+      {% if previous_alerts %}
+      <ul>
+        {% for a in previous_alerts %}
+          <li>
+            <strong>{{ a.created_at }}</strong> — {{ a.alert_type|upper }} by {{ a.admin_name }} • Recipients: {{ a.recipients_count }} • Success: {{ a.successful_count }} • Failed: {{ a.failed_count }}
+          </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-secondary">No previous alerts have been sent for this report.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  const sendBtn = document.getElementById('sendAlertBtn');
+  const resultBox = document.getElementById('resultBox');
+  sendBtn && sendBtn.addEventListener('click', async () => {
+    const alertType = document.querySelector('input[name="alert_type"]:checked').value;
+    const message = document.getElementById('message_content').value.trim();
+    const recipients = Array.from(document.querySelectorAll('input[name="recipient"]:checked')).map(x => parseInt(x.value));
+
+    if (!message) {
+      alert('Please enter an alert message');
+      return;
+    }
+
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Sending...';
+    resultBox.style.display = 'none';
+
+    try {
+      const res = await fetch('{{ url_for('admin_send_alert') }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          report_id: {{ report.id }},
+          alert_type: alertType,
+          message_content: message,
+          recipient_ids: recipients
+        })
+      });
+      const data = await res.json();
+      resultBox.style.display = 'block';
+      if (res.ok && data.success) {
+        resultBox.className = 'alert alert-success';
+        resultBox.textContent = data.message;
+      } else {
+        resultBox.className = 'alert alert-danger';
+        resultBox.textContent = data.error || 'Failed to send alert';
+      }
+    } catch (e) {
+      resultBox.style.display = 'block';
+      resultBox.className = 'alert alert-danger';
+      resultBox.textContent = 'An error occurred while sending alert';
+    } finally {
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Send Alert';
+    }
+  });
+</script>
+{% endblock %}
+

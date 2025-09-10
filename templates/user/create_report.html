@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Incident - Coastal Disaster Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        body {
+            background: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(45deg, #667eea, #764ba2) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 0 40px 0;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            margin-top: -20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .form-control, .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 15px 20px;
+            font-size: 16px;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 12px;
+            padding: 15px 40px;
+            font-weight: 600;
+        }
+        
+        .btn-outline-primary {
+            border: 2px solid #667eea;
+            color: #667eea;
+            border-radius: 12px;
+            padding: 15px 40px;
+            font-weight: 600;
+        }
+        
+        #map {
+            height: 300px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .location-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        
+        .location-info.detected {
+            background: #d1edff;
+            border: 2px solid #0d6efd;
+        }
+        
+        .hazard-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .hazard-option {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .hazard-option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .hazard-option.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .severity-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .severity-option {
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 2px solid;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .severity-low {
+            border-color: #28a745;
+            color: #28a745;
+            background: #f8fff8;
+        }
+        
+        .severity-medium {
+            border-color: #ffc107;
+            color: #ffc107;
+            background: #fffef8;
+        }
+        
+        .severity-high {
+            border-color: #dc3545;
+            color: #dc3545;
+            background: #fff8f8;
+        }
+        
+        .severity-option.selected {
+            color: white;
+        }
+        
+        .severity-low.selected {
+            background: #28a745;
+        }
+        
+        .severity-medium.selected {
+            background: #ffc107;
+        }
+        
+        .severity-high.selected {
+            background: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('user_dashboard') }}">
+                <i class="fas fa-water me-2"></i>Coastal Safety Portal
+            </a>
+            
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('user_dashboard') }}">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('user_create_report') }}">
+                            <i class="fas fa-plus-circle me-1"></i>Report Incident
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('user_my_reports') }}">
+                            <i class="fas fa-list me-1"></i>My Reports
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">
+                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container text-center">
+            <h1 class="display-6 fw-bold mb-3">
+                <i class="fas fa-plus-circle me-3"></i>Report Coastal Incident
+            </h1>
+            <p class="lead">Help protect your community by reporting hazards. Our system will analyze your report instantly.</p>
+        </div>
+    </div>
+
+    <div class="container mb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="form-container">
+                    <!-- Flash Messages -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" id="reportForm">
+                        <!-- Incident Type -->
+                        <div class="mb-4">
+                            <h5 class="mb-3"><i class="fas fa-exclamation-triangle text-warning me-2"></i>What type of incident are you reporting?</h5>
+                            <div class="hazard-selector">
+                                <div class="hazard-option" data-type="coastal_flooding">
+                                    <i class="fas fa-water fa-2x text-primary mb-2"></i>
+                                    <h6>Coastal Flooding</h6>
+                                </div>
+                                <div class="hazard-option" data-type="erosion">
+                                    <i class="fas fa-mountain fa-2x text-warning mb-2"></i>
+                                    <h6>Coastal Erosion</h6>
+                                </div>
+                                <div class="hazard-option" data-type="storm">
+                                    <i class="fas fa-bolt fa-2x text-danger mb-2"></i>
+                                    <h6>Storm/Cyclone</h6>
+                                </div>
+                                <div class="hazard-option" data-type="pollution">
+                                    <i class="fas fa-skull-crossbones fa-2x text-success mb-2"></i>
+                                    <h6>Marine Pollution</h6>
+                                </div>
+                            </div>
+                            <input type="hidden" name="hazard_type" id="hazardType" required>
+                        </div>
+
+                        <!-- Location -->
+                        <div class="mb-4">
+                            <h5 class="mb-3"><i class="fas fa-map-marker-alt text-primary me-2"></i>Where is this happening?</h5>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div id="map"></div>
+                                    <div class="mt-3">
+                                        <button type="button" class="btn btn-outline-primary" onclick="getCurrentLocation()">
+                                            <i class="fas fa-location-arrow me-2"></i>Use My Location
+                                        </button>
+                                        <small class="text-muted ms-3">Or click on the map</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="location-info" id="locationInfo">
+                                        <h6><i class="fas fa-info-circle"></i> Location</h6>
+                                        <p class="text-muted">Click on the map or use GPS</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="latitude" id="latitude" required>
+                            <input type="hidden" name="longitude" id="longitude" required>
+                            <input type="hidden" name="location_name" id="locationName">
+                            <input type="hidden" name="city" id="city">
+                            <input type="hidden" name="state" id="state">
+                        </div>
+
+                        <!-- Details -->
+                        <div class="mb-4">
+                            <h5 class="mb-3"><i class="fas fa-edit text-info me-2"></i>Describe what you observed</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="title" class="form-label">Incident Title</label>
+                                        <input type="text" class="form-control" name="title" id="title" required 
+                                               placeholder="e.g., Flooding on Marine Drive">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Severity Level</label>
+                                    <div class="severity-selector">
+                                        <div class="severity-option severity-low" data-severity="low">Low</div>
+                                        <div class="severity-option severity-medium" data-severity="medium">Medium</div>
+                                        <div class="severity-option severity-high" data-severity="high">High</div>
+                                    </div>
+                                    <input type="hidden" name="severity" id="severity" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" name="description" id="description" rows="4" required 
+                                          placeholder="Describe what you observed. Include time, extent, and any immediate dangers."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-flex gap-3">
+                            <a href="{{ url_for('user_dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                                <i class="fas fa-paper-plane me-2"></i>Submit Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    
+    <script>
+        let map, marker;
+        let selectedHazard = null;
+        let selectedSeverity = null;
+        let locationSelected = false;
+        
+        // Initialize map
+        document.addEventListener('DOMContentLoaded', function() {
+            map = L.map('map').setView([20.5937, 78.9629], 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            
+            // Load existing hotspots
+            loadExistingHotspots();
+            
+            map.on('click', function(e) {
+                setLocation(e.latlng.lat, e.latlng.lng);
+            });
+        });
+        
+        // Load existing hotspots as red markers
+        async function loadExistingHotspots() {
+            try {
+                const response = await fetch('/api/hotspots');
+                const data = await response.json();
+                
+                if (data.hotspots) {
+                    data.hotspots.forEach(hotspot => {
+                        // Create red warning marker for existing hotspots
+                        const hotspotIcon = L.divIcon({
+                            html: '<i class="fas fa-exclamation-triangle" style="color: #dc3545; font-size: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>',
+                            iconSize: [25, 25],
+                            className: 'existing-hotspot-marker'
+                        });
+                        
+                        const hotspotMarker = L.marker([hotspot.lat, hotspot.lng], {icon: hotspotIcon})
+                            .addTo(map)
+                            .bindPopup(`
+                                <div class="existing-hotspot-popup">
+                                    <h6 class="text-danger mb-2">
+                                        <i class="fas fa-fire"></i> Active Incident
+                                    </h6>
+                                    <strong>${hotspot.name}</strong><br>
+                                    <small class="text-muted">${hotspot.description}</small><br>
+                                    <span class="badge bg-${
+                                        hotspot.severity === 'high' ? 'danger' : 
+                                        hotspot.severity === 'medium' ? 'warning' : 'success'
+                                    } mt-2">${hotspot.severity.toUpperCase()} RISK</span><br>
+                                    <small class="text-muted"><i class="fas fa-clock"></i> ${hotspot.detectedAt}</small>
+                                    <div class="mt-2">
+                                        <small class="text-info">
+                                            <i class="fas fa-info-circle"></i> Consider this when reporting your incident
+                                        </small>
+                                    </div>
+                                </div>
+                            `);
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load existing hotspots:', error);
+            }
+        }
+        async function loadHotspots() {
+            try {
+                const response = await fetch('/api/hotspots');
+                const data = await response.json();
+                
+                if (data.hotspots) {
+                    data.hotspots.forEach(hotspot => {
+                        // Create red marker for existing hotspots
+                        const hotspotIcon = L.divIcon({
+                            html: '<i class="fas fa-exclamation-triangle" style="color: #dc3545; font-size: 20px;"></i>',
+                            iconSize: [25, 25],
+                            className: 'hotspot-marker'
+                        });
+                        
+                        const hotspotMarker = L.marker([hotspot.lat, hotspot.lng], {icon: hotspotIcon})
+                            .addTo(map)
+                            .bindPopup(`
+                                <div class="hotspot-popup">
+                                    <h6><i class="fas fa-fire text-danger"></i> Active Hotspot</h6>
+                                    <strong>${hotspot.name}</strong><br>
+                                    <small class="text-muted">${hotspot.description}</small><br>
+                                    <span class="badge bg-${
+                                        hotspot.severity === 'high' ? 'danger' : 
+                                        hotspot.severity === 'medium' ? 'warning' : 'success'
+                                    }">${hotspot.severity.toUpperCase()}</span><br>
+                                    <small><i class="fas fa-clock"></i> ${hotspot.detectedAt}</small>
+                                </div>
+                            `);
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load hotspots:', error);
+            }
+        }
+        
+        // Hazard type selection
+        document.querySelectorAll('.hazard-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.hazard-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedHazard = this.dataset.type;
+                document.getElementById('hazardType').value = selectedHazard;
+                checkFormValidity();
+            });
+        });
+        
+        // Severity selection
+        document.querySelectorAll('.severity-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.severity-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedSeverity = this.dataset.severity;
+                document.getElementById('severity').value = selectedSeverity;
+                checkFormValidity();
+            });
+        });
+        
+        // Form validation
+        document.getElementById('title').addEventListener('input', checkFormValidity);
+        document.getElementById('description').addEventListener('input', checkFormValidity);
+        
+        function checkFormValidity() {
+            const title = document.getElementById('title').value.trim();
+            const description = document.getElementById('description').value.trim();
+            
+            const isValid = selectedHazard && selectedSeverity && locationSelected && title && description;
+            document.getElementById('submitBtn').disabled = !isValid;
+        }
+        
+        // Location functions
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        setLocation(position.coords.latitude, position.coords.longitude);
+                    },
+                    function(error) {
+                        alert('Error getting location: ' + error.message);
+                    }
+                );
+            }
+        }
+        
+        async function setLocation(lat, lng) {
+            if (marker) map.removeLayer(marker);
+            
+            marker = L.marker([lat, lng]).addTo(map);
+            map.setView([lat, lng], 13);
+            
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lng;
+            locationSelected = true;
+            
+            // Reverse geocoding
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                const data = await response.json();
+                
+                if (data && data.display_name) {
+                    const address = data.address || {};
+                    const locationName = data.display_name;
+                    const city = address.city || address.town || address.village || '';
+                    const state = address.state || '';
+                    
+                    document.getElementById('locationName').value = locationName;
+                    document.getElementById('city').value = city;
+                    document.getElementById('state').value = state;
+                    
+                    document.getElementById('locationInfo').innerHTML = `
+                        <h6><i class="fas fa-check-circle text-success"></i> Location Selected</h6>
+                        <p class="mb-2"><strong>Address:</strong> ${city}, ${state}</p>
+                        <p class="mb-0 small text-muted">Coordinates: ${lat.toFixed(4)}, ${lng.toFixed(4)}</p>
+                    `;
+                    document.getElementById('locationInfo').classList.add('detected');
+                }
+            } catch (error) {
+                document.getElementById('locationName').value = `Location: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            }
+            
+            checkFormValidity();
+        }
+    </script>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Report - Coastal Disaster Management</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .header { background: #059669; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .form-container { background: white; padding: 30px; border-radius: 8px; max-width: 600px; margin: 0 auto; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        textarea { height: 100px; resize: vertical; }
+        .submit-btn { background: #dc2626; color: white; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; }
+        .location-btn { background: #3b82f6; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚨 Create Disaster Report</h1>
+        <p>Help save lives by reporting disasters in your area</p>
+    </div>
+    
+    <div class="form-container">
+        <form method="POST">
+            <div class="form-group">
+                <label>Report Title:</label>
+                <input type="text" name="title" required placeholder="e.g., Severe flooding on Marine Drive">
+            </div>
+            
+            <div class="form-group">
+                <label>Description:</label>
+                <textarea name="description" required placeholder="Describe what you're seeing. Include specific details like water levels, affected areas, people in danger, etc."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Hazard Type:</label>
+                <select name="hazard_type" required>
+                    <option value="">Select hazard type</option>
+                    <option value="flood">Flood</option>
+                    <option value="cyclone">Cyclone/Storm</option>
+                    <option value="tsunami">Tsunami</option>
+                    <option value="high_waves">High Waves</option>
+                    <option value="coastal_erosion">Coastal Erosion</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Severity:</label>
+                <select name="severity" required>
+                    <option value="">Select severity</option>
+                    <option value="low">Low - Minor impact</option>
+                    <option value="medium">Medium - Moderate impact</option>
+                    <option value="high">High - Major impact</option>
+                    <option value="critical">Critical - Life threatening</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <button type="button" class="location-btn" onclick="getLocation()">📍 Get My Location</button>
+                <input type="hidden" name="latitude" id="latitude" required>
+                <input type="hidden" name="longitude" id="longitude" required>
+                <input type="text" name="location_name" placeholder="Location will appear here" readonly>
+            </div>
+            
+            <div class="form-group">
+                <input type="text" name="city" placeholder="City" required>
+            </div>
+            
+            <div class="form-group">
+                <input type="text" name="state" placeholder="State" required>
+            </div>
+            
+            <button type="submit" class="submit-btn">🚨 Submit Report</button>
+            <a href="/user" style="margin-left: 20px; color: #666; text-decoration: none;">Cancel</a>
+        </form>
+    </div>
+    
+    <script>
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    document.getElementById('latitude').value = position.coords.latitude;
+                    document.getElementById('longitude').value = position.coords.longitude;
+                    document.getElementsByName('location_name')[0].value = 
+                        `Lat: ${position.coords.latitude.toFixed(6)}, Lon: ${position.coords.longitude.toFixed(6)}`;
+                    alert('Location captured successfully!');
+                });
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
+        }
+    </script>
+</body>
+</html>
+    

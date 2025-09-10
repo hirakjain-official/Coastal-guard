@@ -1,0 +1,368 @@
+{% extends "base_new.html" %}
+
+{% block title %}My Reports - Coastal Hazard Management{% endblock %}
+
+{% block extra_head %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        text-align: center;
+    }
+    
+    .reports-grid {
+        display: grid;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .report-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .report-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+    
+    .report-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .report-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #f9fafb;
+        margin: 0;
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .report-badges {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    
+    .badge-severity-high {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+    }
+    
+    .badge-severity-medium {
+        background: rgba(251, 191, 36, 0.2);
+        color: #fbbf24;
+    }
+    
+    .badge-severity-low {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+    }
+    
+    .badge-status-pending {
+        background: rgba(251, 191, 36, 0.2);
+        color: #fbbf24;
+    }
+    
+    .badge-status-reviewed {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3b82f6;
+    }
+    
+    .badge-status-resolved {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+    }
+    
+    .report-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+        color: #9ca3af;
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .report-description {
+        color: #d1d5db;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+    }
+    
+    .ai-analysis {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .ai-analysis-title {
+        font-weight: 600;
+        color: #3b82f6;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .confidence-bar {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        height: 6px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+    
+    .confidence-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981, #3b82f6);
+        transition: width 0.3s ease;
+    }
+    
+    .no-reports {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #9ca3af;
+    }
+    
+    .no-reports-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        opacity: 0.6;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+        cursor: pointer;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .report-id {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 0.75rem;
+        color: #6b7280;
+        opacity: 0.7;
+    }
+    
+    @media (max-width: 768px) {
+        .report-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+        .report-meta {
+            grid-template-columns: 1fr;
+        }
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1>📋 My Reports</h1>
+        <p>Track the status and AI analysis of your submitted hazard reports</p>
+    </div>
+    
+    <!-- Reports Grid -->
+    <div class="reports-grid">
+        {% if reports %}
+            {% for report in reports %}
+            <div class="report-card">
+                <div class="report-id">ID: #{{ report.id }}</div>
+                
+                <div class="report-header">
+                    <h3 class="report-title">{{ report.title }}</h3>
+                    <div class="report-badges">
+                        <span class="badge badge-severity-{{ report.severity|lower }}">
+                            {{ report.severity|title }} Severity
+                        </span>
+                        <span class="badge badge-status-{{ report.status|lower }}">
+                            {{ report.status|title }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="report-meta">
+                    <div class="meta-item">
+                        <span>🏷️</span>
+                        <span>{{ report.hazard_type }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>📍</span>
+                        <span>{{ report.address or (report.city + ', ' + report.state if report.city and report.state else 'Location not specified') }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>⏰</span>
+                        <span>{{ report.created_at[:19] if report.created_at else 'Unknown' }}</span>
+                    </div>
+                    {% if report.updated_at and report.updated_at != report.created_at %}
+                    <div class="meta-item">
+                        <span>🔄</span>
+                        <span>Updated: {{ report.updated_at[:19] }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if report.description %}
+                <div class="report-description">
+                    {{ report.description }}
+                </div>
+                {% endif %}
+                
+                {% if report.correlation_confidence or report.social_media_correlations or report.generated_keywords %}
+                <div class="ai-analysis">
+                    <div class="ai-analysis-title">
+                        <span>🤖</span>
+                        AI Analysis Results
+                    </div>
+                    
+                    {% if report.correlation_confidence %}
+                    <div style="margin-bottom: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                            <span style="font-size: 0.875rem; color: #d1d5db;">Confidence Score</span>
+                            <span style="font-weight: 600; color: #3b82f6;">{{ (report.correlation_confidence * 100)|round|int }}%</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: {{ (report.correlation_confidence * 100)|round|int }}%"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if report.social_media_correlations %}
+                        {% set correlations = report.social_media_correlations|from_json %}
+                        {% if correlations and correlations|length > 0 %}
+                        <div style="font-size: 0.875rem; color: #9ca3af; margin-bottom: 0.5rem;">
+                            📱 Found {{ correlations|length }} social media correlation{{ 's' if correlations|length != 1 else '' }}
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                    
+                    {% if report.generated_keywords %}
+                        {% set keywords = report.generated_keywords|from_json %}
+                        {% if keywords %}
+                        <div style="font-size: 0.875rem; color: #9ca3af;">
+                            🔍 Keywords: {{ keywords.get('keywords', [])|join(', ') if keywords.get('keywords') }}
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                {% if report.admin_notes %}
+                <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.2); border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                    <div style="font-weight: 600; color: #fbbf24; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span>📝</span>
+                        Admin Notes
+                    </div>
+                    <div style="font-size: 0.875rem; color: #d1d5db;">
+                        {{ report.admin_notes }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-reports">
+                <div class="no-reports-icon">📝</div>
+                <h3>No Reports Submitted Yet</h3>
+                <p>You haven't submitted any hazard reports. Start by reporting an incident in your area.</p>
+                
+                <div class="action-buttons">
+                    <a href="{{ url_for('create_report') }}" class="btn btn-primary">
+                        📝 Submit Your First Report
+                    </a>
+                    <a href="{{ url_for('user_dashboard') }}" class="btn btn-success">
+                        🏠 Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    {% if reports %}
+    <div style="text-align: center; margin-top: 2rem;">
+        <a href="{{ url_for('create_report') }}" class="btn btn-primary">
+            📝 Submit New Report
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

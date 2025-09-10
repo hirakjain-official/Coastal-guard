@@ -1,0 +1,249 @@
+{% extends "base_new.html" %}
+
+{% block title %}Report Hazard - Coastal Guard{% endblock %}
+
+{% block extra_head %}
+<style>
+.location-picker {
+    height: 300px;
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.location-info {
+    background: var(--bg-panel);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="mb-8">
+        <h1 class="text-center">⚠️ Report Coastal Hazard</h1>
+        <p class="text-center text-secondary">Help protect your community by reporting coastal hazards and incidents</p>
+    </div>
+    
+    <div class="grid grid-cols-1" style="max-width: 800px; margin: 0 auto;">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Hazard Report Form</h2>
+                <p class="card-subtitle">Provide details about the coastal hazard you've observed</p>
+            </div>
+            
+            <form method="POST" enctype="multipart/form-data" id="reportForm">
+                <!-- Basic Information -->
+                <div class="form-group">
+                    <label for="title" class="form-label">Report Title *</label>
+                    <input type="text" class="form-input" id="title" name="title" required 
+                           placeholder="Brief description of the hazard">
+                </div>
+                
+                <div class="grid grid-cols-2">
+                    <div class="form-group">
+                        <label for="hazard_type" class="form-label">Hazard Type *</label>
+                        <select class="form-select" id="hazard_type" name="hazard_type" required>
+                            <option value="">Select hazard type</option>
+                            <option value="Flood">Coastal Flooding</option>
+                            <option value="High_Waves">High Waves</option>
+                            <option value="Storm_Surge">Storm Surge</option>
+                            <option value="Coastal_Erosion">Coastal Erosion</option>
+                            <option value="Tsunami">Tsunami Warning</option>
+                            <option value="Cyclone">Cyclone/Hurricane</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="severity" class="form-label">Severity Level</label>
+                        <select class="form-select" id="severity" name="severity">
+                            <option value="Low">Low - Minor impact</option>
+                            <option value="Medium" selected>Medium - Moderate impact</option>
+                            <option value="High">High - Major impact</option>
+                            <option value="Critical">Critical - Life threatening</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Description -->
+                <div class="form-group">
+                    <label for="description" class="form-label">Detailed Description *</label>
+                    <textarea class="form-textarea" id="description" name="description" required 
+                              placeholder="Describe what you observed, including time, conditions, and impacts..." rows="4"></textarea>
+                </div>
+                
+                <!-- Location Section -->
+                <div class="form-group">
+                    <label class="form-label">📍 Location Information</label>
+                    
+                    <div class="flex gap-4 mb-4">
+                        <button type="button" class="btn btn-secondary" id="getCurrentLocation">
+                            🎯 Use Current Location
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="selectOnMap">
+                            🗺️ Select on Map
+                        </button>
+                    </div>
+                    
+                    <!-- Map Container -->
+                    <div id="mapContainer" class="location-picker map-container hidden"></div>
+                    
+                    <!-- Location Details -->
+                    <div class="grid grid-cols-2">
+                        <div class="form-group">
+                            <label for="city" class="form-label">City</label>
+                            <input type="text" class="form-input" id="city" name="city" placeholder="City name">
+                        </div>
+                        <div class="form-group">
+                            <label for="state" class="form-label">State</label>
+                            <input type="text" class="form-input" id="state" name="state" placeholder="State name">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="address" class="form-label">Address/Landmark</label>
+                        <input type="text" class="form-input" id="address" name="address" 
+                               placeholder="Specific address or nearby landmark">
+                    </div>
+                    
+                    <!-- Hidden coordinate fields -->
+                    <input type="hidden" id="latitude" name="latitude">
+                    <input type="hidden" id="longitude" name="longitude">
+                    
+                    <div class="location-info hidden" id="locationInfo">
+                        <p class="text-secondary" style="margin: 0;">
+                            📍 <span id="coordinatesDisplay"></span>
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Optional Image Upload -->
+                <div class="form-group">
+                    <label class="form-label">📸 Photo Evidence (Optional)</label>
+                    <p class="text-secondary" style="font-size: 0.875rem; margin-bottom: 1rem;">
+                        Upload a photo of the hazard if available. Max 8MB, JPG/PNG/WEBP only.
+                    </p>
+                    
+                    <div class="file-upload">
+                        <input type="file" class="file-input" id="imageUpload" name="image" accept="image/jpeg,image/jpg,image/png,image/webp">
+                        <label for="imageUpload" class="file-label">
+                            📸 Choose Photo
+                        </label>
+                    </div>
+                    
+                    <div id="imagePreview" class="file-preview hidden"></div>
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="text-center mt-6">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        📝 Submit Report
+                    </button>
+                    <p class="text-secondary mt-4" style="font-size: 0.875rem;">
+                        Your report will be analyzed by AI and reviewed by emergency management officials
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Map and location variables
+let map = null;
+let marker = null;
+let mapContainer = document.getElementById('mapContainer');
+
+// Initialize map when needed
+function initMap() {
+    if (map) return;
+    
+    map = L.map('mapContainer').setView([20.0, 77.0], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    map.on('click', function(e) {
+        setLocationFromCoordinates(e.latlng.lat, e.latlng.lng);
+    });
+}
+
+function setLocationFromCoordinates(lat, lng) {
+    // Set coordinates
+    document.getElementById('latitude').value = lat;
+    document.getElementById('longitude').value = lng;
+    
+    // Update map marker
+    if (marker) {
+        map.removeLayer(marker);
+    }
+    marker = L.marker([lat, lng]).addTo(map);
+    
+    // Update display
+    document.getElementById('coordinatesDisplay').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    document.getElementById('locationInfo').classList.remove('hidden');
+    
+    // Reverse geocoding
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.address) {
+                document.getElementById('city').value = data.address.city || data.address.town || '';
+                document.getElementById('state').value = data.address.state || '';
+                document.getElementById('address').value = data.display_name || '';
+            }
+        })
+        .catch(err => console.log('Geocoding error:', err));
+}
+
+// Event listeners
+document.getElementById('getCurrentLocation').addEventListener('click', function() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            mapContainer.classList.remove('hidden');
+            initMap();
+            map.setView([lat, lng], 13);
+            setLocationFromCoordinates(lat, lng);
+            
+            showToast('Current location detected successfully!', 'success');
+        }, function(error) {
+            showToast('Unable to get current location. Please select on map.', 'warning');
+        });
+    } else {
+        showToast('Geolocation not supported by this browser.', 'warning');
+    }
+});
+
+document.getElementById('selectOnMap').addEventListener('click', function() {
+    mapContainer.classList.remove('hidden');
+    initMap();
+    map.invalidateSize();
+    showToast('Click on the map to select location', 'info');
+});
+
+// Image preview
+bindImagePreview('imageUpload', 'imagePreview');
+
+// Form validation
+document.getElementById('reportForm').addEventListener('submit', function(e) {
+    const title = document.getElementById('title').value.trim();
+    const description = document.getElementById('description').value.trim();
+    const hazardType = document.getElementById('hazard_type').value;
+    
+    if (!title || !description || !hazardType) {
+        e.preventDefault();
+        showToast('Please fill in all required fields.', 'danger');
+        return false;
+    }
+    
+    showToast('Submitting report...', 'info');
+});
+</script>
+{% endblock %}

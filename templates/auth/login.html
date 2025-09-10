@@ -1,0 +1,196 @@
+{% extends "base_new.html" %}
+
+{% block title %}Login - Coastal Hazard Management{% endblock %}
+
+{% block extra_head %}
+<style>
+    .login-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 2rem;
+        background: linear-gradient(135deg, #0B0E11 0%, #1A2332 50%, #0B0E11 100%);
+    }
+    
+    .login-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 2rem;
+        width: 100%;
+        max-width: 400px;
+        backdrop-filter: blur(20px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .login-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .login-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #f9fafb;
+        margin-bottom: 0.5rem;
+    }
+    
+    .login-subtitle {
+        color: #9ca3af;
+        font-size: 0.875rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 500;
+        color: #d1d5db;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: #fff;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .form-input::placeholder {
+        color: #6b7280;
+    }
+    
+    .login-button {
+        width: 100%;
+        padding: 0.875rem;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-bottom: 1rem;
+    }
+    
+    .login-button:hover {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+    }
+    
+    .login-button:active {
+        transform: translateY(0);
+    }
+    
+    .admin-hint {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1.5rem;
+        text-align: center;
+    }
+    
+    .admin-hint-title {
+        font-weight: 600;
+        color: #3b82f6;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .admin-hint-text {
+        color: #9ca3af;
+        font-size: 0.75rem;
+        line-height: 1.4;
+    }
+    
+    .signup-link {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .signup-link a {
+        color: #3b82f6;
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .signup-link a:hover {
+        color: #2563eb;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1 class="login-title">🌊 Coastal Guard</h1>
+            <p class="login-subtitle">Sign in to access the emergency management system</p>
+        </div>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="form-input"
+                    placeholder="Enter your email"
+                    required
+                    autocomplete="email"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-input"
+                    placeholder="Enter your password"
+                    required
+                    autocomplete="current-password"
+                >
+            </div>
+            
+            <button type="submit" class="login-button">
+                🔑 Sign In
+            </button>
+        </form>
+        
+        <div class="admin-hint">
+            <div class="admin-hint-title">🚨 Admin Access</div>
+            <div class="admin-hint-text">
+                Email: admin@coastal.gov<br>
+                Password: admin123
+            </div>
+        </div>
+        
+        <div class="signup-link">
+            <a href="{{ url_for('signup') }}">Don't have an account? Sign up</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

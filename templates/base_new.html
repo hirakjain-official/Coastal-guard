@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Coastal Hazard Management{% endblock %}</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-dark text-light">
+    <!-- Transparent Top Navigation -->
+    <nav class="navbar-transparent">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2 class="brand-title">🌊 {{ t('brand') }}</h2>
+            </div>
+            
+            <div class="nav-menu">
+                <!-- Language Switcher -->
+                <div class="language-switcher">
+                    <select id="languageSelect" onchange="changeLanguage(this.value)" style="
+                        background: rgba(255, 255, 255, 0.1);
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                        color: #fff;
+                        padding: 0.5rem;
+                        border-radius: 6px;
+                        font-size: 0.875rem;
+                        margin-right: 1rem;
+                    ">
+                        <option value="en" {% if current_language == 'en' %}selected{% endif %}>🇺🇸 English</option>
+                        <option value="hi" {% if current_language == 'hi' %}selected{% endif %}>🇮🇳 हिंदी</option>
+                        <option value="ta" {% if current_language == 'ta' %}selected{% endif %}>🇮🇳 தமிழ்</option>
+                        <option value="te" {% if current_language == 'te' %}selected{% endif %}>🇮🇳 తెలుగు</option>
+                    </select>
+                </div>
+                
+                {% if session.user_id %}
+                    {% if session.role == 'admin' %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="nav-link">{{ t('nav.admin_dashboard') }}</a>
+                        <a href="{{ url_for('admin_reports') }}" class="nav-link">{{ t('nav.manage_reports') }}</a>
+                        <a href="{{ url_for('admin_alerts_history') }}" class="nav-link">📢 {{ t('nav.alerts') }}</a>
+                        <a href="{{ url_for('admin_timeline') }}" class="nav-link">{{ t('nav.timeline') }}</a>
+                        <a href="{{ url_for('admin_agent1_management') }}" class="nav-link">{{ t('nav.agent_control') }}</a>
+                    {% else %}
+                        <a href="{{ url_for('user_dashboard') }}" class="nav-link">{{ t('nav.dashboard') }}</a>
+                        <a href="{{ url_for('create_report') }}" class="nav-link">{{ t('nav.report_hazard') }}</a>
+                        <a href="{{ url_for('my_reports') }}" class="nav-link">{{ t('nav.my_reports') }}</a>
+                    {% endif %}
+                    <div class="user-menu">
+                        <span class="username">{{ session.username }}</span>
+                        <a href="{{ url_for('logout') }}" class="nav-link logout">{{ t('nav.logout') }}</a>
+                    </div>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="nav-link">{{ t('nav.login') }}</a>
+                    <a href="{{ url_for('signup') }}" class="nav-link">{{ t('nav.signup') }}</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="toast toast-{{ category }}">
+                        <span>{{ message }}</span>
+                        <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    
+    <script>
+        function changeLanguage(languageCode) {
+            window.location.href = "{{ url_for('set_language', language_code='LANG_CODE') }}".replace('LANG_CODE', languageCode);
+        }
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

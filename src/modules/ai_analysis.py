@@ -15,8 +15,10 @@ class AIAnalysisService:
     
     def __init__(self):
         """Initialize the AI analysis service."""
-        self.deepseek_api_key = os.getenv('DEEPSEEK_API_KEY')
-        self.deepseek_base_url = os.getenv('DEEPSEEK_BASE_URL', 'https://api.deepseek.com')
+        # Try OpenRouter first, then fallback to direct DeepSeek
+        self.deepseek_api_key = os.getenv('OPENROUTER_API_KEY') or os.getenv('DEEPSEEK_API_KEY')
+        self.deepseek_base_url = os.getenv('DEEPSEEK_BASE_URL', 'https://openrouter.ai/api/v1')
+        self.model_name = os.getenv('DEEPSEEK_MODEL', 'deepseek/deepseek-chat')
         self.confidence_threshold = float(os.getenv('CONFIDENCE_THRESHOLD', 0.75))
         
         # Classification prompts
@@ -148,7 +150,7 @@ Classify this post according to the guidelines provided."""
         }
         
         payload = {
-            'model': 'deepseek-chat',
+            'model': self.model_name,
             'messages': [
                 {'role': 'system', 'content': self.system_prompt},
                 {'role': 'user', 'content': user_prompt}
@@ -164,8 +166,9 @@ Classify this post according to the guidelines provided."""
                     content = result['choices'][0]['message']['content'].strip()
                     
                     try:
-                        # Parse JSON response
-                        analysis = json.loads(content)
+                        # Parse JSON response, handling markdown code blocks
+                        json_content = self._extract_json_from_response(content)
+                        analysis = json.loads(json_content)
                         return self._validate_analysis_result(analysis)
                     except json.JSONDecodeError as e:
                         logger.error(f"Failed to parse AI response as JSON: {content}")
@@ -174,6 +177,27 @@ Classify this post according to the guidelines provided."""
                     error_text = await response.text()
                     logger.error(f"DeepSeek API error {response.status}: {error_text}")
                     raise Exception(f"API error: {response.status}")
+    
+    def _extract_json_from_response(self, content: str) -> str:
+        """Extract JSON from response, handling markdown code blocks."""
+        content = content.strip()
+        
+        # Check if content is wrapped in markdown code blocks
+        if content.startswith('```json') and content.endswith('```'):
+            # Remove the markdown wrapper
+            lines = content.split('\n')
+            # Remove first line (```json) and last line (```)
+            json_lines = lines[1:-1]
+            return '\n'.join(json_lines)
+        elif content.startswith('```') and content.endswith('```'):
+            # Handle generic code blocks
+            lines = content.split('\n')
+            # Remove first line (```) and last line (```)
+            json_lines = lines[1:-1]
+            return '\n'.join(json_lines)
+        else:
+            # Return as-is if no markdown wrapper
+            return content
     
     def _validate_analysis_result(self, analysis: Dict[str, Any]) -> Dict[str, Any]:
         """Validate and normalize the analysis result."""

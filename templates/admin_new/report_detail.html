@@ -1,0 +1,409 @@
+{% extends "base_new.html" %}
+
+{% block title %}Report Details - {{ report.title }} - Admin{% endblock %}
+
+{% block extra_head %}
+<style>
+.report-header {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.tweet-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.tweet-card:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent-blue);
+}
+
+.tweet-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tweet-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    margin-right: 1rem;
+}
+
+.tweet-content {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+}
+
+.tweet-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.analysis-section {
+    background: var(--bg-panel);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+.analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.analysis-item {
+    text-align: center;
+    padding: 1rem;
+    background: var(--bg-card);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.analysis-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.analysis-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.confidence-bar {
+    background: var(--bg-hover);
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.confidence-fill {
+    height: 100%;
+    background: var(--accent-blue);
+    transition: width 0.3s ease;
+}
+
+.urgency-high { color: var(--danger); }
+.urgency-medium { color: var(--warning); }
+.urgency-low { color: var(--success); }
+
+.language-tag {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: var(--bg-hover);
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.keywords-section {
+    background: var(--bg-panel);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.keyword-tag {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: var(--accent-blue);
+    color: white;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    margin: 0.25rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <div class="mb-6">
+        <nav style="font-size: 0.875rem; color: var(--text-secondary);">
+            <a href="{{ url_for('admin_dashboard') }}" style="color: var(--accent-blue);">Admin Dashboard</a> > 
+            <a href="{{ url_for('admin_reports') }}" style="color: var(--accent-blue);">Reports</a> > 
+            Report #{{ report.id }}
+        </nav>
+    </div>
+    
+    <!-- Report Header -->
+    <div class="report-header">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h1 class="card-title mb-2">{{ report.title }}</h1>
+                <div class="flex items-center gap-4">
+                    <span class="badge badge-{% if report.severity == 'Critical' %}danger{% elif report.severity == 'High' %}warning{% else %}info{% endif %}">
+                        {{ report.severity }} Severity
+                    </span>
+                    <span class="badge badge-{% if report.status == 'resolved' %}success{% elif report.status == 'investigating' %}warning{% else %}info{% endif %}">
+                        {{ report.status|title }}
+                    </span>
+                    {% if report.correlation_confidence > 0.7 %}
+                    <span class="badge badge-success">High AI Confidence</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="text-right">
+                <p class="text-secondary">Reported by: <strong>{{ report.user_name }}</strong></p>
+                <p class="text-secondary">{{ report.created_at }}</p>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-secondary mb-2">Description</h3>
+                <p class="text-primary">{{ report.description }}</p>
+                
+                {% if report.image_path %}
+                <div class="mt-4">
+                    <h3 class="text-secondary mb-2">Photo Evidence</h3>
+                    <img src="{{ url_for('uploaded_file', filename=report.image_path) }}" 
+                         alt="Report Photo" style="max-width: 100%; height: auto; border-radius: 0.5rem;">
+                </div>
+                {% endif %}
+            </div>
+            
+            <div>
+                <h3 class="text-secondary mb-2">Location</h3>
+                <p class="text-primary">📍 {{ report.address or (report.city + ', ' + report.state if report.city else 'Location not specified') }}</p>
+                
+                {% if report.latitude and report.longitude %}
+                <p class="text-secondary">Coordinates: {{ "%.6f"|format(report.latitude) }}, {{ "%.6f"|format(report.longitude) }}</p>
+                {% endif %}
+                
+                <div class="mt-4">
+                    <h3 class="text-secondary mb-2">AI Analysis Confidence</h3>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: {{ (report.correlation_confidence * 100)|round }}%"></div>
+                    </div>
+                    <p class="text-secondary mt-2">{{ "%.1f"|format(report.correlation_confidence * 100) }}% confidence</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Generated Keywords Section -->
+    {% if keywords %}
+    <div class="keywords-section">
+        <h2 class="card-title mb-4">🔍 AI-Generated Search Keywords</h2>
+        
+        {% if keywords.primary_keywords %}
+        <div class="mb-4">
+            <h3 class="text-secondary mb-2">Primary Keywords</h3>
+            {% for keyword in keywords.primary_keywords %}
+            <span class="keyword-tag">{{ keyword }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if keywords.hashtag_suggestions %}
+        <div class="mb-4">
+            <h3 class="text-secondary mb-2">Hashtags</h3>
+            {% for hashtag in keywords.hashtag_suggestions %}
+            <span class="keyword-tag">{{ hashtag }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if keywords.combined_queries %}
+        <div class="mb-4">
+            <h3 class="text-secondary mb-2">Search Queries Used</h3>
+            {% for query in keywords.combined_queries %}
+            <span class="keyword-tag" style="background: var(--bg-hover); color: var(--text-primary);">{{ query }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <!-- Social Media Analysis -->
+    {% if correlations %}
+    <div class="mb-6">
+        <h2 class="card-title mb-4">🐦 X/Twitter Intelligence Analysis</h2>
+        <p class="text-secondary mb-6">AI-powered analysis of related social media posts found using the generated keywords above.</p>
+        
+        {% for correlation in correlations %}
+        <div class="tweet-card">
+            <!-- Tweet Header (Instagram-style) -->
+            <div class="tweet-header">
+                <div class="tweet-avatar">
+                    {{ correlation.post_text[0]|upper if correlation.post_text else 'X' }}
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1rem;">{{ correlation.get('author', 'Unknown User') }}</h3>
+                    <p class="text-secondary" style="margin: 0; font-size: 0.875rem;">
+                        {{ correlation.get('analyzed_at', 'Recently')[:10] if correlation.get('analyzed_at') else 'Recent' }}
+                        {% if correlation.original_language %}
+                        <span class="language-tag ml-2">{{ correlation.original_language.upper() }}</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Tweet Content -->
+            <div class="tweet-content">
+                "{{ correlation.post_text[:500] }}{% if correlation.post_text|length > 500 %}...{% endif %}"
+            </div>
+            
+            <!-- Tweet Meta -->
+            <div class="tweet-meta">
+                <span>📍 {{ correlation.post_location or 'Location unknown' }}</span>
+                <span>ID: {{ correlation.post_id[:15] }}{% if correlation.post_id|length > 15 %}...{% endif %}</span>
+            </div>
+            
+            <!-- AI Analysis Results -->
+            <div class="analysis-section">
+                <h4 class="text-secondary mb-3">🤖 DeepSeek AI Analysis</h4>
+                
+                <div class="analysis-grid">
+                    <div class="analysis-item">
+                        <div class="analysis-value {% if correlation.hazard_detected %}text-danger{% else %}text-success{% endif %}">
+                            {% if correlation.hazard_detected %}⚠️ YES{% else %}✅ NO{% endif %}
+                        </div>
+                        <div class="analysis-label">Hazard Detected</div>
+                    </div>
+                    
+                    {% if correlation.hazard_detected %}
+                    <div class="analysis-item">
+                        <div class="analysis-value">{{ correlation.hazard_type or 'Other' }}</div>
+                        <div class="analysis-label">Hazard Type</div>
+                    </div>
+                    
+                    <div class="analysis-item">
+                        <div class="analysis-value urgency-{{ correlation.urgency|lower }}">{{ correlation.urgency or 'Low' }}</div>
+                        <div class="analysis-label">Urgency Level</div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="analysis-item">
+                        <div class="analysis-value" style="color: var(--accent-blue);">{{ "%.0f"|format((correlation.confidence or 0) * 100) }}%</div>
+                        <div class="analysis-label">Confidence</div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: {{ ((correlation.confidence or 0) * 100)|round }}%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if correlation.final_summary %}
+                <div class="mt-4">
+                    <h5 class="text-secondary mb-2">📝 AI Summary</h5>
+                    <p class="text-primary" style="background: var(--bg-card); padding: 1rem; border-radius: 0.5rem; border-left: 4px solid var(--accent-blue);">
+                        {{ correlation.final_summary }}
+                    </p>
+                </div>
+                {% endif %}
+                
+                {% if correlation.recommended_action %}
+                <div class="mt-3">
+                    <h5 class="text-secondary mb-2">💡 Recommended Action</h5>
+                    <p class="text-warning" style="background: rgba(245, 158, 11, 0.1); padding: 1rem; border-radius: 0.5rem;">
+                        {{ correlation.recommended_action }}
+                    </p>
+                </div>
+                {% endif %}
+                
+                {% if correlation.historical_context %}
+                <div class="mt-3">
+                    <h5 class="text-secondary mb-2">📅 Historical Context</h5>
+                    <p class="text-secondary" style="font-style: italic;">{{ correlation.historical_context }}</p>
+                </div>
+                {% endif %}
+                
+                {% if correlation.seasonal_pattern %}
+                <div class="mt-3">
+                    <h5 class="text-secondary mb-2">🍂 Seasonal Pattern</h5>
+                    <p class="text-secondary">{{ correlation.seasonal_pattern }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="text-center" style="padding: 3rem;">
+            <h3 class="text-secondary">🔍 No Social Media Analysis Available</h3>
+            <p class="text-secondary">This report either hasn't been processed by AI yet, or no relevant social media posts were found.</p>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Admin Actions -->
+    <div class="card mt-6">
+        <div class="card-header">
+            <h3 class="card-title">Admin Actions</h3>
+        </div>
+        
+        <form method="POST" action="{{ url_for('admin_update_report_status') }}" class="grid grid-cols-2 gap-4">
+            <input type="hidden" name="report_id" value="{{ report.id }}">
+            
+            <div class="form-group">
+                <label for="status" class="form-label">Update Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="pending" {% if report.status == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="investigating" {% if report.status == 'investigating' %}selected{% endif %}>Investigating</option>
+                    <option value="resolved" {% if report.status == 'resolved' %}selected{% endif %}>Resolved</option>
+                    <option value="false_alarm" {% if report.status == 'false_alarm' %}selected{% endif %}>False Alarm</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="admin_notes" class="form-label">Admin Notes</label>
+                <textarea class="form-textarea" id="admin_notes" name="notes" rows="3" placeholder="Add admin comments...">{{ report.admin_notes or '' }}</textarea>
+            </div>
+            
+            <div style="grid-column: span 2; text-align: center;">
+                <button type="submit" class="btn btn-primary">Update Report</button>
+                <a href="{{ url_for('admin_alert_confirm', report_id=report.id) }}" class="btn btn-warning ml-4">🚨 Send Alert</a>
+                <a href="{{ url_for('admin_reports') }}" class="btn btn-secondary ml-4">Back to Reports</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Update confidence bars animation
+document.addEventListener('DOMContentLoaded', function() {
+    const fills = document.querySelectorAll('.confidence-fill');
+    fills.forEach(fill => {
+        const width = fill.style.width;
+        fill.style.width = '0%';
+        setTimeout(() => {
+            fill.style.width = width;
+        }, 300);
+    });
+});
+</script>
+{% endblock %}

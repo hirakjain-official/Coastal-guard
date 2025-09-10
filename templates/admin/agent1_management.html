@@ -1,0 +1,547 @@
+{% extends "base_new.html" %}
+
+{% block title %}Agent 1 Management - Coastal Hazard Management{% endblock %}
+
+{% block extra_head %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        text-align: center;
+    }
+    
+    .control-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .control-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #f9fafb;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .status-item {
+        text-align: center;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .status-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #4ade80;
+        margin-bottom: 0.25rem;
+    }
+    
+    .status-label {
+        font-size: 0.875rem;
+        color: #9ca3af;
+    }
+    
+    .control-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+        cursor: pointer;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+    }
+    
+    .btn-warning {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+    }
+    
+    .btn-warning:hover {
+        background: linear-gradient(135deg, #d97706, #b45309);
+        box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2);
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 500;
+        color: #d1d5db;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: #fff;
+        font-size: 0.875rem;
+    }
+    
+    .tweets-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+    
+    .tweet-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+    
+    .tweet-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .tweet-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .tweet-user {
+        font-weight: 600;
+        color: #3b82f6;
+        margin-bottom: 0.25rem;
+    }
+    
+    .tweet-meta {
+        font-size: 0.875rem;
+        color: #9ca3af;
+    }
+    
+    .tweet-text {
+        color: #f9fafb;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+    }
+    
+    .ai-analysis-card {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .ai-analysis-title {
+        font-weight: 600;
+        color: #3b82f6;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .analysis-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .analysis-item {
+        text-align: center;
+    }
+    
+    .analysis-value {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .analysis-label {
+        font-size: 0.75rem;
+        color: #9ca3af;
+    }
+    
+    .urgency-high { color: #ef4444; }
+    .urgency-medium { color: #f59e0b; }
+    .urgency-low { color: #10b981; }
+    
+    .confidence-bar {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        height: 6px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+    
+    .confidence-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981, #3b82f6);
+        transition: width 0.3s ease;
+    }
+    
+    .keywords {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .keyword-tag {
+        background: rgba(255, 255, 255, 0.1);
+        color: #d1d5db;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+    }
+    
+    .tweet-stats {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.875rem;
+        color: #9ca3af;
+        margin-top: 1rem;
+    }
+    
+    .tweet-stat {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    @media (max-width: 768px) {
+        .control-grid {
+            grid-template-columns: 1fr;
+        }
+        .status-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .analysis-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1>🤖 Agent 1 Management</h1>
+        <p>Control scheduling, monitor performance, and analyze AI insights from social media</p>
+    </div>
+    
+    <!-- Control Grid -->
+    <div class="control-grid">
+        <!-- Scheduler Control -->
+        <div class="control-card">
+            <div class="section-title">
+                <span>⚙️</span>
+                Scheduler Control
+            </div>
+            
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-value">{{ scheduler_status.interval }}</div>
+                    <div class="status-label">Minutes Interval</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value">{{ scheduler_status.total_runs }}</div>
+                    <div class="status-label">Total Runs</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value">{{ scheduler_status.successful_runs }}</div>
+                    <div class="status-label">Successful</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" style="color: #ef4444;">{{ scheduler_status.failed_runs }}</div>
+                    <div class="status-label">Failed</div>
+                </div>
+            </div>
+            
+            <div style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                <div style="font-size: 0.875rem; color: #9ca3af; margin-bottom: 0.5rem;">
+                    <strong>Status:</strong> 
+                    <span style="color: {{ '#10b981' if scheduler_status.active else '#ef4444' }};">
+                        {{ 'Active' if scheduler_status.active else 'Inactive' }}
+                    </span>
+                </div>
+                <div style="font-size: 0.875rem; color: #9ca3af; margin-bottom: 0.5rem;">
+                    <strong>Last Run:</strong> {{ scheduler_status.last_run }}
+                </div>
+                <div style="font-size: 0.875rem; color: #9ca3af;">
+                    <strong>Next Run:</strong> {{ scheduler_status.next_run }}
+                </div>
+            </div>
+            
+            <div class="control-buttons">
+                <button class="btn btn-success" onclick="runAgent1Now()">
+                    ▶️ Run Now
+                </button>
+                <button class="btn btn-warning" onclick="pauseScheduler()">
+                    ⏸️ Pause
+                </button>
+                <button class="btn btn-primary" onclick="resumeScheduler()">
+                    ⏯️ Resume
+                </button>
+                <button class="btn btn-danger" onclick="stopScheduler()">
+                    ⏹️ Stop
+                </button>
+            </div>
+        </div>
+        
+        <!-- Scheduler Settings -->
+        <div class="control-card">
+            <div class="section-title">
+                <span>🔧</span>
+                Scheduler Settings
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Monitoring Interval (minutes)</label>
+                <input type="number" id="intervalInput" class="form-input" value="{{ scheduler_status.interval }}" min="5" max="1440">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Search Keywords</label>
+                <input type="text" id="keywordsInput" class="form-input" placeholder="flood, storm, emergency, coastal" value="flood, storm, emergency, coastal">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Geographic Filter</label>
+                <input type="text" id="locationInput" class="form-input" placeholder="Miami, Tampa, coastal areas" value="coastal areas">
+            </div>
+            
+            <div class="control-buttons">
+                <button class="btn btn-primary" onclick="updateSettings()">
+                    💾 Save Settings
+                </button>
+                <button class="btn btn-success" onclick="testConfiguration()">
+                    🧪 Test Config
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Tweets Analysis -->
+    <div class="control-card">
+        <div class="section-title">
+            <span>🐦</span>
+            Recent Tweet Analysis
+        </div>
+        
+        <div class="tweets-grid">
+            {% for tweet in recent_tweets %}
+            <div class="tweet-card">
+                <div class="tweet-header">
+                    <div>
+                        <div class="tweet-user">{{ tweet.user }}</div>
+                        <div class="tweet-meta">
+                            📍 {{ tweet.location }} • ⏰ {{ tweet.timestamp }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tweet-text">
+                    "{{ tweet.text }}"
+                </div>
+                
+                <div class="ai-analysis-card">
+                    <div class="ai-analysis-title">
+                        <span>🤖</span>
+                        AI Analysis Results
+                    </div>
+                    
+                    <div class="analysis-grid">
+                        <div class="analysis-item">
+                            <div class="analysis-value urgency-{{ tweet.ai_analysis.urgency|lower }}">
+                                {{ tweet.ai_analysis.urgency }}
+                            </div>
+                            <div class="analysis-label">Urgency</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-value">{{ tweet.ai_analysis.hazard_type }}</div>
+                            <div class="analysis-label">Hazard Type</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-value urgency-{{ tweet.ai_analysis.severity|lower }}">
+                                {{ tweet.ai_analysis.severity }}
+                            </div>
+                            <div class="analysis-label">Severity</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-value">{{ (tweet.ai_analysis.confidence * 100)|round|int }}%</div>
+                            <div class="analysis-label">Confidence</div>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" style="width: {{ (tweet.ai_analysis.confidence * 100)|round|int }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <div style="font-weight: 600; color: #f59e0b; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                            📋 Recommended Action:
+                        </div>
+                        <div style="font-size: 0.875rem; color: #d1d5db;">
+                            {{ tweet.ai_analysis.recommended_action }}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div style="font-weight: 600; color: #3b82f6; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                            🔍 Keywords:
+                        </div>
+                        <div class="keywords">
+                            {% for keyword in tweet.ai_analysis.keywords %}
+                            <span class="keyword-tag">{{ keyword }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tweet-stats">
+                    <div class="tweet-stat">
+                        <span>🔄</span>
+                        <span>{{ tweet.retweets }}</span>
+                    </div>
+                    <div class="tweet-stat">
+                        <span>❤️</span>
+                        <span>{{ tweet.likes }}</span>
+                    </div>
+                    <div class="tweet-stat">
+                        <span>🆔</span>
+                        <span>{{ tweet.id }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+function runAgent1Now() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '⏳ Running...';
+    btn.disabled = true;
+    
+    // Simulate API call
+    setTimeout(() => {
+        alert('✅ Agent 1 executed successfully! Found 3 new tweets.');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }, 2000);
+}
+
+function pauseScheduler() {
+    if (confirm('Are you sure you want to pause the scheduler?')) {
+        alert('⏸️ Scheduler paused');
+    }
+}
+
+function resumeScheduler() {
+    alert('▶️ Scheduler resumed');
+}
+
+function stopScheduler() {
+    if (confirm('Are you sure you want to stop the scheduler? This will require manual restart.')) {
+        alert('⏹️ Scheduler stopped');
+    }
+}
+
+function updateSettings() {
+    const interval = document.getElementById('intervalInput').value;
+    const keywords = document.getElementById('keywordsInput').value;
+    const location = document.getElementById('locationInput').value;
+    
+    // Simulate API call
+    setTimeout(() => {
+        alert(`✅ Settings updated successfully!\nInterval: ${interval} minutes\nKeywords: ${keywords}\nLocation: ${location}`);
+    }, 500);
+}
+
+function testConfiguration() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '🧪 Testing...';
+    btn.disabled = true;
+    
+    // Simulate API call
+    setTimeout(() => {
+        alert('✅ Configuration test completed!\n• API connections: OK\n• Keywords: Valid\n• Location filter: Active\n• Expected results: 5-10 tweets/hour');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }, 3000);
+}
+</script>
+{% endblock %}

@@ -1,36 +1,39 @@
-# Social Media Analytics Agent
+# Coastal Hazard Management System
 
-A comprehensive social media monitoring system designed to detect and analyze water-related hazards (floods, tsunamis, high waves, cyclones) across India through real-time social media analysis.
+A comprehensive real-time coastal hazard monitoring and report management system that combines citizen reporting with AI-powered social media intelligence to detect and respond to water-related hazards across India's coastal regions.
 
 ## 🌊 Overview
 
-This system implements a **Phase 1 - Hourly Batch Processing** workflow that:
+This system provides a **dual-portal architecture** with integrated AI analysis:
 
-- **Fetches** social media posts every hour from Twitter/X using RapidAPI and official Twitter API
-- **Processes** posts through deduplication, cleaning, and location inference  
-- **Analyzes** content using DeepSeek AI for hazard classification and urgency assessment
-- **Aggregates** results to detect geographical hotspots of hazard activity
-- **Validates** findings through an analyst dashboard workflow
-- **Alerts** relevant authorities and citizen applications when hazards are confirmed
+- **Citizen Portal** - Submit hazard reports with location, description, and disaster type
+- **Admin Dashboard** - Monitor reports, view analytics, and manage system configuration
+- **AI Intelligence (Agent 2)** - Real-time Twitter analysis using DeepSeek LLM for hazard detection
+- **Interactive Maps** - Live visualization of hazard reports and social media alerts
+- **Multilingual Support** - English + Hindi, Tamil, Telugu, Malayalam, Bengali, Odia, Gujarati
+- **Real-time Processing** - Immediate report analysis and social media correlation
 
 ### Key Features
 
-✅ **Multi-source Data Ingestion** - Twitter/X via RapidAPI and official API  
-✅ **Multi-language Support** - English + 11 Indian regional languages  
-✅ **AI-Powered Classification** - DeepSeek API for hazard type and urgency detection  
-✅ **Geospatial Hotspot Detection** - Cluster analysis for identifying affected areas  
-✅ **Human-in-the-Loop Validation** - Analyst dashboard for confirmation  
-✅ **Automated Alerting** - Integration with official dashboards and citizen apps  
-✅ **India-Focused** - Optimized for Indian geography, languages, and hazard patterns  
+✅ **Dual Web Interface** - Citizen reporting portal + Admin dashboard with live maps
+✅ **AI-Powered Intelligence** - DeepSeek LLM analysis with multilingual hazard detection
+✅ **Real-time Twitter Integration** - RapidAPI Twitter search with location-based filtering
+✅ **Comprehensive Terminal Output** - Detailed logs showing tweets and AI analysis results
+✅ **Interactive Maps** - Leaflet-based visualization with hazard markers and geolocation
+✅ **Persistent Data Storage** - JSON-based report storage with automatic backup
+✅ **Multilingual Processing** - Support for English + 8 Indian regional languages
+✅ **Configurable Scheduling** - Adjustable Agent 1 intervals via admin controls
+✅ **Fallback Analysis** - Keyword-based hazard detection when LLM is unavailable
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 - Python 3.8+
-- PostgreSQL 12+ 
-- Redis 6+
-- API Keys for Twitter/X and DeepSeek
+- Flask web framework
+- API Keys:
+  - RapidAPI Key (for Twitter search)
+  - OpenRouter API Key (for DeepSeek LLM)
 
 ### Installation
 
@@ -53,102 +56,120 @@ This system implements a **Phase 1 - Hourly Batch Processing** workflow that:
 
 3. **Install dependencies**
    ```bash
-   pip install -r requirements.txt
+   pip install flask requests python-dotenv loguru asyncio aiohttp
    ```
 
 4. **Set up environment variables**
+   Create a `.env` file in the project root:
    ```bash
-   cp .env.template .env
-   # Edit .env with your API keys and database credentials
-   ```
-
-5. **Initialize database** (optional - will use file storage by default)
-   ```bash
-   # Set up PostgreSQL and Redis if using database storage
-   # Update DATABASE_URL and REDIS_URL in .env
-   ```
-
-6. **Run the application**
-   ```bash
-   # Test single batch
-   python src/main.py --test
+   # API Configuration
+   RAPIDAPI_KEY=your_rapidapi_key_here
+   OPENROUTER_API_KEY=your_openrouter_api_key_here
    
-   # Start scheduled hourly processing
-   python src/main.py
+   # Optional: Flask Configuration
+   FLASK_ENV=development
+   FLASK_DEBUG=True
    ```
 
-## 📊 Architecture Overview
+5. **Run the application**
+   ```bash
+   # Start the Flask web application
+   python app_dual_portal.py
+   
+   # Access the system:
+   # Citizen Portal: http://localhost:5000
+   # Admin Dashboard: http://localhost:5000/admin
+   ```
 
-### Phase 1 - Hourly Batch Workflow
+📊 System Architecture
+
+### Dual-Portal Web Application
 
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   🕐 Scheduler   │───▶│  📥 Data Ingest  │───▶│ 🧹 Preprocessing │
-│   (Every hour)  │    │ Twitter/X APIs   │    │ Clean & Dedupe  │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                                                          │
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│ 🚨 Alerts       │◀───│ ✅ Validation    │◀───│ 🤖 AI Analysis  │
-│ Official/Citizen│    │ Analyst Review   │    │ DeepSeek API    │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                                                          │
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│ 💾 Storage      │◀───│ 📍 Aggregation   │◀───│                 │
-│ Database/Files  │    │ Hotspot Detection│    │                 │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
+┌────────────────────┐    ┌────────────────────┐
+│  👥 Citizen Portal   │    │  📊 Admin Dashboard  │
+│  - Report Submission  │    │  - View All Reports   │
+│  - Interactive Map    │    │  - AI Intelligence    │
+│  - Real-time Alerts   │    │  - System Controls    │
+└────────────────────┘    └────────────────────┘
+             │                           │
+             └───────────┬───────────┘
+                        │
+        ┌──────────────────────────────┐
+        │      🤖 AI AGENT 2         │
+        │   Social Media Intelligence  │
+        └──────────────────────────────┘
+                        │
+        ┌───────────┬──────────────────┐
+        │           │               │
+  ┌─────────────────┐ ┌─────────────────┐
+  │ 📡 RapidAPI     │ │ 🧠 DeepSeek LLM  │
+  │ Twitter Search  │ │ Hazard Analysis │
+  └─────────────────┘ └─────────────────┘
 ```
 
-### Data Flow
+### System Workflow
 
-1. **Scheduler** triggers every 60 minutes
-2. **Data Ingestion** fetches posts from last hour using:
-   - Twitter/X RapidAPI with India geo-filter + hazard keywords
-   - Official Twitter API v2 with comprehensive search queries
-3. **Preprocessing** performs:
-   - Deduplication and retweet removal
-   - Text cleaning and normalization  
-   - Language detection (English + regional languages)
-   - Location inference from geotags and text content
-4. **AI Analysis** classifies each post:
-   - Relevance: hazard vs non-hazard
-   - Hazard Type: Flood, Tsunami, High Wave, Storm Surge, Cyclone, Other
-   - Urgency: Low, Medium, High
-   - Confidence Score: 0.0 to 1.0
-5. **Aggregation** detects hotspots:
-   - Groups posts by location + hazard type
-   - Flags areas with ≥20 high-confidence posts in 10km radius
-6. **Validation** sends to analyst dashboard:
-   - Human review of detected hotspots
-   - Confirm/reject decisions feed back into system
-7. **Alerts** notify relevant channels:
-   - Official emergency dashboards
-   - Citizen mobile applications
-   - Geographic push notifications
+#### Citizen Report Processing
+1. **Report Submission** via citizen portal:
+   - Location (city, state, coordinates)
+   - Hazard description (multilingual support)
+   - Disaster type selection (flood, tsunami, etc.)
+2. **Immediate Storage** in JSON format with timestamp
+3. **Agent 2 Trigger** - Automatic social media intelligence analysis
+4. **Map Visualization** - Real-time marker placement
+
+#### AI Intelligence Processing (Agent 2)
+1. **Twitter Search** using RapidAPI:
+   - Location-based filtering (50km radius)
+   - Hazard-related keyword matching
+   - Recent posts (last hour)
+2. **DeepSeek LLM Analysis** for each tweet:
+   - Multilingual hazard detection
+   - Urgency assessment (Low/Medium/High)
+   - Confidence scoring (0.0-1.0)
+   - Historical pattern analysis
+   - Seasonal risk evaluation
+3. **Terminal Output** with detailed results:
+   - Raw tweet content display
+   - AI analysis breakdown
+   - Correlation scoring
+4. **Admin Dashboard Integration** - Results display with urgency badges
+
+#### Fallback Processing
+- **Keyword-based Analysis** when LLM unavailable
+- **Local Storage** ensures no data loss
+- **Error Handling** with comprehensive logging
 
 ## 🛠️ Configuration
 
 ### Environment Variables (.env)
 
 ```bash
-# Database
-DATABASE_URL=postgresql://user:pass@localhost:5432/social_analytics
-REDIS_URL=redis://localhost:6379/0
+# Required API Keys
+RAPIDAPI_KEY=your_rapidapi_key_here
+OPENROUTER_API_KEY=your_openrouter_api_key_here
 
-# API Keys
-TWITTER_API_KEY=your_key
-TWITTER_BEARER_TOKEN=your_token
-RAPIDAPI_KEY=your_key
-DEEPSEEK_API_KEY=your_key
+# Flask Application Settings
+FLASK_ENV=development
+FLASK_DEBUG=True
+FLASK_PORT=5000
 
-# Application Settings
-SCHEDULER_INTERVAL=3600  # 1 hour
-CONFIDENCE_THRESHOLD=0.75
-HOTSPOT_POST_THRESHOLD=20
-HOTSPOT_RADIUS_KM=10
+# Agent Configuration
+AGENT1_SCHEDULER_INTERVAL=300  # 5 minutes default
+CONFIDENCE_THRESHOLD=0.3       # Correlation filter threshold
+TWITTER_SEARCH_RADIUS=50       # km radius for location search
+MAX_TWEETS_PER_SEARCH=10       # tweets to analyze per report
 
-# Regional Settings  
-SUPPORTED_LANGUAGES=en,hi,ta,te,bn,mr,gu,kn,ml,or,pa,as
+# Multilingual Support
+SUPPORTED_LANGUAGES=en,hi,ta,te,ml,bn,or,gu
+DEFAULT_LANGUAGE=en
 TIMEZONE=Asia/Kolkata
+
+# Storage Settings
+REPORTS_FILE=data/reports.json
+BACKUP_ENABLED=true
+BACKUP_INTERVAL=3600  # 1 hour
 ```
 
 ### Regional Configuration (config/regional_config.yaml)
@@ -162,56 +183,64 @@ Contains India-specific:
 
 ## 📝 Usage Examples
 
-### Running Single Test Batch
+### Starting the Web Application
 ```bash
-python src/main.py --test
+# Run the Flask application
+python app_dual_portal.py
+
+# Access the portals:
+# Citizen Portal: http://localhost:5000
+# Admin Dashboard: http://localhost:5000/admin
 ```
 
-### Starting Scheduled Processing  
+### Testing Agent 2 Analysis
 ```bash
-python src/main.py
+# Test DeepSeek LLM analysis with demo tweets
+python test_agent2_analysis.py
+
+# Monitor terminal for detailed output:
+# - Tweet content display
+# - AI analysis results
+# - Correlation scores
 ```
 
-### Monitoring Logs
+### Viewing Reports and Analysis
 ```bash
-tail -f logs/social_analytics.log
+# Check stored reports
+cat data/reports.json | python -m json.tool
+
+# Monitor Flask application logs
+# Watch terminal for Agent 2 AI analysis output
 ```
 
-### Checking Stored Results
-```bash
-# View processed batch files
-ls data/processed/
-
-# Examine specific batch
-cat data/processed/batch_[id].json | jq .
-```
+### System Features
+- **Submit Reports**: Use citizen portal to create hazard reports
+- **View Intelligence**: Admin dashboard shows AI analysis results
+- **Interactive Maps**: Click markers to see report details
+- **Real-time Processing**: Reports trigger immediate Twitter analysis
 
 ## 🧪 Development
 
 ### Project Structure
 ```
-social-media-analytics-agent/
+coastal-hazard-management-system/
+├── app_dual_portal.py      # Main Flask application
 ├── src/
-│   ├── main.py                 # Application entry point
-│   └── modules/
-│       ├── scheduler.py        # Job scheduling  
-│       ├── data_ingestion.py   # Social media API clients
-│       ├── preprocessing.py    # Text cleaning & location inference
-│       ├── ai_analysis.py      # DeepSeek hazard classification
-│       ├── aggregation.py      # Hotspot detection
-│       ├── validation.py       # Analyst dashboard integration
-│       ├── alerts.py          # Notification systems
-│       └── storage.py         # Database operations
-├── config/
-│   ├── regional_config.yaml   # India-specific configuration
-│   └── database.yaml         # Database schema & settings
+│   └── agents/
+│       └── agent2_report_analysis.py  # AI-powered social media analysis
+├── templates/
+│   ├── citizen_portal.html     # Citizen report submission interface
+│   ├── admin_dashboard.html    # Admin monitoring interface
+│   └── base.html              # Common template base
+├── static/
+│   ├── css/                   # Styling
+│   └── js/                    # JavaScript for maps & interactions
 ├── data/
-│   ├── raw/                  # Ingested posts
-│   ├── processed/            # Batch processing results
-│   └── alerts/              # Generated alerts
-├── logs/                    # Application logs
-├── tests/                  # Unit tests
-└── scripts/               # Utility scripts
+│   └── reports.json           # Persistent report storage
+├── test_agent2_analysis.py  # Agent 2 testing script
+├── .env                    # Environment variables (API keys)
+├── README.md               # This documentation
+└── requirements.txt        # Python dependencies
 ```
 
 ### Adding New Languages

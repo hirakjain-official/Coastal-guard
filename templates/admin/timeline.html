@@ -1,0 +1,116 @@
+{% extends "base_new.html" %}
+
+{% block title %}Timeline - Coastal Hazard Management{% endblock %}
+
+{% block extra_head %}
+<style>
+  .page-header { background: linear-gradient(135deg, #1a1a1a, #2d2d2d); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; text-align: center; }
+  .filters { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: center; margin-bottom: 1.5rem; }
+  .filter-input { padding: 0.5rem 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; }
+  .stats-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 1.5rem; }
+  .stat-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1rem; text-align: center; }
+  .stat-value { font-size: 1.5rem; font-weight: 700; color: #4ade80; }
+  .timeline { border-left: 2px solid rgba(255,255,255,0.1); margin-left: 1rem; padding-left: 1rem; }
+  .event { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; position: relative; }
+  .event::before { content: ''; position: absolute; left: -1.2rem; top: 1rem; width: 12px; height: 12px; background: #3b82f6; border-radius: 50%; border: 2px solid #1f2937; }
+  .event-header { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+  .badge { padding: 0.25rem 0.5rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+  .badge-status { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .badge-hazard { background: rgba(239,68,68,0.15); color: #f87171; }
+  .badge-severity { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .event-meta { font-size: 0.85rem; color: #9ca3af; display: flex; gap: 1rem; flex-wrap: wrap; }
+  .notes { margin-top: 0.5rem; color: #d1d5db; font-size: 0.9rem; }
+  .btn { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.15); padding: 0.5rem 0.75rem; border-radius: 8px; text-decoration: none; font-size: 0.85rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <h1>📜 Status Change Timeline</h1>
+    <p>Track the evolution of reports and administrative actions</p>
+  </div>
+
+  <form method="GET" class="filters">
+    <select name="days" class="filter-input">
+      <option value="1" {{ 'selected' if days_filter == 1 else '' }}>Last 24 Hours</option>
+      <option value="3" {{ 'selected' if days_filter == 3 else '' }}>Last 3 Days</option>
+      <option value="7" {{ 'selected' if days_filter == 7 else '' }}>Last 7 Days</option>
+      <option value="30" {{ 'selected' if days_filter == 30 else '' }}>Last 30 Days</option>
+    </select>
+
+    <select name="status" class="filter-input">
+      <option value="all" {{ 'selected' if status_filter == 'all' else '' }}>All Statuses</option>
+      <option value="pending" {{ 'selected' if status_filter == 'pending' else '' }}>Pending</option>
+      <option value="investigating" {{ 'selected' if status_filter == 'investigating' else '' }}>Investigating</option>
+      <option value="reviewed" {{ 'selected' if status_filter == 'reviewed' else '' }}>Reviewed</option>
+      <option value="resolved" {{ 'selected' if status_filter == 'resolved' else '' }}>Resolved</option>
+    </select>
+
+    <select name="hazard" class="filter-input">
+      <option value="all" {{ 'selected' if hazard_filter == 'all' else '' }}>All Hazards</option>
+      {% for hz in hazard_types %}
+      <option value="{{ hz }}" {{ 'selected' if hazard_filter == hz else '' }}>{{ hz }}</option>
+      {% endfor %}
+    </select>
+
+    <button class="btn" type="submit">Apply Filters</button>
+    <a href="{{ url_for('admin_export_reports_csv') }}?status={{ status_filter }}&days={{ days_filter }}&hazard={{ hazard_filter }}" class="btn" style="background: linear-gradient(135deg, #10b981, #059669); margin-left: 1rem;">📊 Export CSV</a>
+    <a href="{{ url_for('admin_export_situation_report_pdf') }}?status={{ status_filter }}&days={{ days_filter }}&hazard={{ hazard_filter }}" class="btn" style="background: linear-gradient(135deg, #ef4444, #dc2626); margin-left: 0.5rem;">📄 PDF Report</a>
+  </form>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value">{{ stats.total_changes or 0 }}</div>
+      <div>Changes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ stats.affected_reports or 0 }}</div>
+      <div>Affected Reports</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ stats.resolutions or 0 }}</div>
+      <div>Resolutions</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ (stats.avg_confidence*100)|round|int if stats.avg_confidence else 0 }}%</div>
+      <div>Avg Confidence</div>
+    </div>
+  </div>
+
+  <div class="timeline">
+    {% if timeline_events %}
+      {% for e in timeline_events %}
+      <div class="event">
+        <div class="event-header">
+          <div>
+            <strong>{{ e.report_title }}</strong>
+            <div class="event-meta">
+              <span>🕒 {{ e.change_time }}</span>
+              <span>👤 {{ e.changed_by_name or 'System' }}</span>
+              <span>📍 {{ e.city }}, {{ e.state }}</span>
+            </div>
+          </div>
+          <div style="display:flex; gap: 0.5rem;">
+            <span class="badge badge-status">{{ e.old_status or 'new' }} → {{ e.new_status }}</span>
+            <span class="badge badge-hazard">{{ e.hazard_type }}</span>
+            <span class="badge badge-severity">{{ e.severity }}</span>
+          </div>
+        </div>
+        {% if e.admin_notes %}
+        <div class="notes">📝 {{ e.admin_notes }}</div>
+        {% endif %}
+        <div class="event-meta" style="margin-top:0.5rem;">
+          <span>🤖 AI: {{ (e.correlation_confidence*100)|round|int if e.correlation_confidence else 0 }}% confidence</span>
+          <span>🐦 Social Posts: {{ e.social_media_count }}</span>
+          {% if e.change_reason %}<span>🔎 Reason: {{ e.change_reason }}</span>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="event">No timeline events in this period.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
