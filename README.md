@@ -141,90 +141,13 @@ This system provides a **dual-portal architecture** with integrated AI analysis:
 - **Local Storage** ensures no data loss
 - **Error Handling** with comprehensive logging
 
-## 🛠️ Configuration
-
-### Environment Variables (.env)
-
-```bash
-# Required API Keys
-RAPIDAPI_KEY=your_rapidapi_key_here
-OPENROUTER_API_KEY=your_openrouter_api_key_here
-
-# Flask Application Settings
-FLASK_ENV=development
-FLASK_DEBUG=True
-FLASK_PORT=5000
-
-# Agent Configuration
-AGENT1_SCHEDULER_INTERVAL=300  # 5 minutes default
-CONFIDENCE_THRESHOLD=0.3       # Correlation filter threshold
-TWITTER_SEARCH_RADIUS=50       # km radius for location search
-MAX_TWEETS_PER_SEARCH=10       # tweets to analyze per report
-
-# Multilingual Support
-SUPPORTED_LANGUAGES=en,hi,ta,te,ml,bn,or,gu
-DEFAULT_LANGUAGE=en
-TIMEZONE=Asia/Kolkata
-
-# Storage Settings
-REPORTS_FILE=data/reports.json
-BACKUP_ENABLED=true
-BACKUP_INTERVAL=3600  # 1 hour
-```
-
-### Regional Configuration (config/regional_config.yaml)
-
-Contains India-specific:
-- 🗺️ Geographic boundaries and coastal cities
-- 🗣️ Multi-language hazard keywords  
-- 📍 Location aliases and variations
-- 🌧️ Seasonal risk factors
-- ⚡ Priority alert regions
-
-## 📝 Usage Examples
-
-### Starting the Web Application
-```bash
-# Run the Flask application
-python app_dual_portal.py
-
-# Access the portals:
-# Citizen Portal: http://localhost:5000
-# Admin Dashboard: http://localhost:5000/admin
-```
-
-### Testing Agent 2 Analysis
-```bash
-# Test DeepSeek LLM analysis with demo tweets
-python test_agent2_analysis.py
-
-# Monitor terminal for detailed output:
-# - Tweet content display
-# - AI analysis results
-# - Correlation scores
-```
-
-### Viewing Reports and Analysis
-```bash
-# Check stored reports
-cat data/reports.json | python -m json.tool
-
-# Monitor Flask application logs
-# Watch terminal for Agent 2 AI analysis output
-```
-
-### System Features
-- **Submit Reports**: Use citizen portal to create hazard reports
-- **View Intelligence**: Admin dashboard shows AI analysis results
-- **Interactive Maps**: Click markers to see report details
-- **Real-time Processing**: Reports trigger immediate Twitter analysis
 
 ## 🧪 Development
 
 ### Project Structure
 ```
 coastal-hazard-management-system/
-├── app_dual_portal.py      # Main Flask application
+├── app.py      # Main Flask application
 ├── src/
 │   └── agents/
 │       └── agent2_report_analysis.py  # AI-powered social media analysis
@@ -334,13 +257,5 @@ grep "Detected.*hotspots" logs/social_analytics.log
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support & Contact
-
-- **Issues**: Create a GitHub issue for bugs or feature requests
-- **Documentation**: Check the `/docs` folder for detailed API documentation  
-- **Community**: Join our Slack channel for discussions
-
----
 
 **Built with ❤️ for disaster preparedness and community safety in India** 🇮🇳
