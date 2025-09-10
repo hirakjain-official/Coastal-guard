@@ -74,7 +74,7 @@ This system provides a **dual-portal architecture** with integrated AI analysis:
 5. **Run the application**
    ```bash
    # Start the Flask web application
-   python app_dual_portal.py
+   python app.py
    
    # Access the system:
    # Citizen Portal: http://localhost:5000
