@@ -18,6 +18,7 @@ from werkzeug.utils import secure_filename
 from pathlib import Path
 import threading
 from functools import wraps
+from loguru import logger
 
 # Twilio imports for alert system
 try:
@@ -31,7 +32,15 @@ except ImportError:
 sys.path.append(str(Path(__file__).parent / 'src'))
 
 from agents.agent2_report_analysis import process_user_report
-from services.twilio_alert_service import twilio_service
+
+# Import Twilio service with error handling
+try:
+    from services.twilio_alert_service import twilio_service
+    TWILIO_SERVICE_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Twilio service not available: {e}")
+    twilio_service = None
+    TWILIO_SERVICE_AVAILABLE = False
 
 # Flask app setup
 app = Flask(__name__)
@@ -1043,11 +1052,16 @@ def admin_alert_confirm(report_id):
         correlations = []
     
     # Get suggested alert message based on hazard type and severity
-    suggested_message = twilio_service.get_template_message(
-        report_dict.get('hazard_type', 'general'),
-        report_dict.get('severity', 'medium'),
-        'sms'
-    )
+    suggested_message = "Emergency Alert: Please check the latest coastal hazard report and take necessary precautions."
+    if TWILIO_SERVICE_AVAILABLE and twilio_service:
+        try:
+            suggested_message = twilio_service.get_template_message(
+                report_dict.get('hazard_type', 'general'),
+                report_dict.get('severity', 'medium'),
+                'sms'
+            )
+        except Exception as e:
+            logger.warning(f"Could not get template message: {e}")
     
     return render_template('admin/alert_confirm.html',
                          report=report_dict,
@@ -1055,7 +1069,7 @@ def admin_alert_confirm(report_id):
                          alert_users=[dict(u) for u in alert_users],
                          previous_alerts=[dict(a) for a in previous_alerts],
                          suggested_message=suggested_message,
-                         twilio_available=twilio_service.is_available())
+                         twilio_available=TWILIO_SERVICE_AVAILABLE and twilio_service and twilio_service.is_available())
 
 @app.route('/admin/api/send-alert', methods=['POST'])
 @admin_required
@@ -1072,7 +1086,7 @@ def admin_send_alert():
     if not all([report_id, alert_type, message_content]):
         return jsonify({'error': 'Missing required fields'}), 400
     
-    if not twilio_service.is_available():
+    if not TWILIO_SERVICE_AVAILABLE or not twilio_service or not twilio_service.is_available():
         return jsonify({'error': 'Twilio service not available. Please check configuration.'}), 503
     
     conn = get_db_connection()
@@ -1970,13 +1984,11 @@ def uploaded_file(filename):
     """Serve uploaded images."""
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+# Initialize for both development and production
+init_database()
+load_translations()
+
 if __name__ == '__main__':
-    # Initialize database
-    init_database()
-    
-    # Load translations
-    load_translations()
-    
-    # Run app
+    # Development server only
     app.run(debug=True, host='0.0.0.0', port=5000)
 

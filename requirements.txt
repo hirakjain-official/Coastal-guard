@@ -37,8 +37,11 @@ tweepy>=4.14.0
 schedule>=1.2.0
 # Note: asyncio is built-in to Python 3.7+, no separate package needed
 
-# Alert System
+# Alert System (Optional - comment out if not using SMS/voice alerts)
 twilio>=8.10.0
+
+# Production WSGI Server
+gunicorn>=21.2.0
 
 # Logging
 loguru>=0.7.0
