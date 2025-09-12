@@ -246,7 +246,7 @@ Generate comprehensive search keywords to find related social media posts."""
         querystring = {
             "query": query,
             "type": "Latest",
-            "max_results": "10"
+            "max_results": "4"  # Limit to 4 tweets per keyword as requested
         }
         
         try:
@@ -715,28 +715,31 @@ Tasks:
         
         overall_confidence = weighted_score / total_weight
         
-        # Enhancement factors
-        # Multiple high-quality correlations
-        if high_confidence_count >= 2:
-            overall_confidence = min(overall_confidence + 0.1, 1.0)
-        elif high_confidence_count >= 3:
-            overall_confidence = min(overall_confidence + 0.15, 1.0)
+        # Enhancement factors (reduced bonuses to prevent 100% confidence)
+        # Multiple high-quality correlations (reduced bonuses)
+        if high_confidence_count >= 3:
+            overall_confidence = min(overall_confidence + 0.05, 0.95)  # Cap at 95%
+        elif high_confidence_count >= 2:
+            overall_confidence = min(overall_confidence + 0.03, 0.92)  # Cap at 92%
         
-        # Location consistency bonus
+        # Location consistency bonus (reduced)
         if location_matches >= 2:
-            overall_confidence = min(overall_confidence + 0.08, 1.0)
+            overall_confidence = min(overall_confidence + 0.03, 0.90)
         
-        # Hazard type consistency bonus
+        # Hazard type consistency bonus (reduced)
         if hazard_matches >= 2:
-            overall_confidence = min(overall_confidence + 0.06, 1.0)
+            overall_confidence = min(overall_confidence + 0.02, 0.88)
         
-        # Urgency factor
-        overall_confidence = min(overall_confidence + urgency_boost, 1.0)
+        # Urgency factor (reduced and capped)
+        overall_confidence = min(overall_confidence + (urgency_boost * 0.5), 0.92)
         
-        # Recency bonus (if posts are recent, they're more relevant)
+        # Recency bonus (reduced)
         recent_posts = [c for c in correlations if self._is_recent_post(c.get('post_text', ''))]
         if len(recent_posts) >= 2:
-            overall_confidence = min(overall_confidence + 0.04, 1.0)
+            overall_confidence = min(overall_confidence + 0.02, 0.90)
+        
+        # Final cap to ensure never reaches 100%
+        overall_confidence = min(overall_confidence, 0.95)
         
         return round(overall_confidence, 3)
     

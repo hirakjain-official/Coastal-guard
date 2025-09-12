@@ -101,6 +101,131 @@ def translate_filter(key, **kwargs):
     """Template filter for translations."""
     return get_translation(key, **kwargs)
 
+@app.template_filter('clean_tweet')
+def clean_tweet_filter(text):
+    """Clean tweet text for display - remove gibberish and format nicely."""
+    if not text:
+        return "No content available"
+    
+    # Convert to string if not already
+    text = str(text)
+    
+    # If this looks like a JSON object (Twitter API response), try to parse it
+    if text.startswith('{') and 'full_text' in text:
+        try:
+            import json
+            import re
+            
+            # Clean up the JSON-like string
+            # Remove escape sequences and fix common issues
+            text = text.replace('\\n', '\n').replace('\\\"', '"').replace('\\"', '"')
+            
+            # Try to extract the full_text field using regex since JSON parsing might fail
+            full_text_match = re.search(r"'full_text':\s*'([^']*(?:''[^']*)*)'|'full_text':\s*\"([^\"]*(?:\\\"[^\"]*)*)\"", text)
+            if full_text_match:
+                actual_text = full_text_match.group(1) or full_text_match.group(2)
+                if actual_text and len(actual_text) > 10:
+                    # Clean up Unicode escapes and handle encoding properly
+                    try:
+                        actual_text = actual_text.encode('latin1').decode('unicode_escape')
+                    except (UnicodeEncodeError, UnicodeDecodeError):
+                        try:
+                            actual_text = actual_text.encode().decode('unicode_escape', errors='ignore')
+                        except Exception:
+                            pass  # Use original text if all decoding fails
+                    return actual_text[:280] + ("..." if len(actual_text) > 280 else "")
+        except Exception:
+            pass
+    
+    # Remove extra quotes and escaping
+    text = text.replace('\"', '"').replace("\\", "")
+    
+    # Remove leading/trailing quotes
+    text = text.strip('"\'')
+    
+    # Clean up multiple spaces
+    import re
+    text = re.sub(r'\s+', ' ', text).strip()
+    
+    # If text looks like JSON or contains lots of brackets/braces, try to extract readable content
+    if text.count('{') > 2 or text.count('[') > 2:
+        # Try to extract any quoted text that might be the actual tweet content
+        import re
+        quoted_matches = re.findall(r'["\']([^"\n]{20,})["\']', text)
+        if quoted_matches:
+            # Return the longest quoted string (likely the actual tweet)
+            longest_quote = max(quoted_matches, key=len)
+            if len(longest_quote) > 10:  # Only use if substantial content
+                text = longest_quote
+    
+    # Final fallback - if still looks like gibberish
+    if len(text) > 500 or text.count('{') > 5:
+        return "[Tweet content not available]"
+    
+    # Truncate if very long
+    if len(text) > 280:
+        text = text[:277] + "..."
+    
+    return text
+
+@app.template_filter('clean_username') 
+def clean_username_filter(username):
+    """Clean username for display."""
+    if not username:
+        return "unknown_user"
+    
+    username = str(username).strip()
+    
+    # If this looks like JSON (from Twitter API), try to extract screen_name
+    if username.startswith('{') and 'screen_name' in username:
+        try:
+            import re
+            # Try to extract screen_name using regex
+            screen_name_match = re.search(r"'screen_name':\s*'([^']+)'|\"screen_name\":\s*\"([^\"]+)\"", username)
+            if screen_name_match:
+                extracted = screen_name_match.group(1) or screen_name_match.group(2)
+                if extracted and len(extracted) < 50:
+                    return extracted[:20]
+        except Exception:
+            pass
+    
+    # Remove @ if already present
+    username = username.lstrip('@')
+    
+    # Remove quotes and extra characters
+    username = username.replace('"', '').replace("'", '').replace('\\', '')
+    
+    # If it looks like JSON gibberish, use fallback
+    if '{' in username or len(username) > 50:
+        return "anonymous_user"
+    
+    # If empty after cleaning, use fallback
+    if not username.strip():
+        return "unknown_user"
+        
+    return username[:20]  # Limit length
+
+@app.template_filter('extract_tweet_author')
+def extract_tweet_author_filter(post_text):
+    """Extract the author/username from Twitter API JSON in post_text field."""
+    if not post_text:
+        return "unknown_user"
+    
+    post_text = str(post_text)
+    
+    try:
+        import re
+        # Try to extract screen_name from the Twitter API JSON
+        screen_name_match = re.search(r"'screen_name':\s*'([^']+)'|\"screen_name\":\s*\"([^\"]+)\"", post_text)
+        if screen_name_match:
+            username = screen_name_match.group(1) or screen_name_match.group(2)
+            if username and len(username) < 50 and not '{' in username:
+                return username[:20]
+    except Exception:
+        pass
+    
+    return "unknown_user"
+
 # Make translation function available in templates
 @app.context_processor
 def inject_language_functions():
@@ -487,6 +612,24 @@ def user_dashboard():
         WHERE user_id = ? AND status = 'pending'
     ''', (session['user_id'],)).fetchone()['count']
     
+    # Calculate resolved reports count
+    resolved_reports = conn.execute('''
+        SELECT COUNT(*) as count FROM reports 
+        WHERE user_id = ? AND status IN ('resolved', 'closed')
+    ''', (session['user_id'],)).fetchone()['count']
+    
+    # Get community statistics (for context)
+    community_stats = conn.execute('''
+        SELECT COUNT(*) as total_community_reports FROM reports
+    ''').fetchone()
+    
+    # Get user's alert count (if any alerts were sent for their reports)
+    user_alerts = conn.execute('''
+        SELECT COUNT(*) as count FROM alert_broadcasts ab
+        JOIN reports r ON ab.report_id = r.id
+        WHERE r.user_id = ?
+    ''', (session['user_id'],)).fetchone()['count']
+    
     # Get all active reports for map (last 30 days)
     cutoff_date = datetime.now() - timedelta(days=30)
     active_reports = conn.execute('''
@@ -501,17 +644,15 @@ def user_dashboard():
     # Convert to list of dicts for JSON serialization
     map_reports = [dict(r) for r in active_reports]
     
-    # Add realistic demo statistics for presentation
-    demo_boost = {
-        'total_reports': max(total_reports, 12),  # Show at least 12 reports
-        'pending_reports': max(pending_reports, 3),  # Show at least 3 pending
-        'resolved_reports': max(total_reports - pending_reports, 9),  # Show at least 9 resolved
-        'community_reports': 847,  # Total community reports
-        'alerts_sent': 23,  # Alerts sent to user
-        'response_time': '4.2 min'  # Average response time
+    # Build actual user statistics
+    stats = {
+        'total_reports': total_reports,
+        'pending_reports': pending_reports,
+        'resolved_reports': resolved_reports,
+        'community_reports': community_stats['total_community_reports'],
+        'alerts_sent': user_alerts,
+        'response_time': '4.2 min'  # This would be calculated from actual data in a real system
     }
-    
-    stats = demo_boost
     
     return render_template('user/dashboard.html', 
                          stats=stats, 

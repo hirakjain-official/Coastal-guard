@@ -7,61 +7,61 @@
     <div class="flex items-center justify-center min-h-screen" style="min-height: 80vh;">
         <div class="card" style="max-width: 400px; width: 100%;">
             <div class="card-header text-center">
-                <h1 class="card-title">🌊 Join Coastal Guard</h1>
-                <p class="card-subtitle">Create your account to report coastal hazards</p>
+                <h1 class="card-title">🌊 {{ t('auth.signup.title') }} {{ t('brand') }}</h1>
+                <p class="card-subtitle">{{ t('auth.signup.subtitle') }}</p>
             </div>
             
             <form method="POST" action="{{ url_for('signup') }}">
                 <div class="form-group">
-                    <label for="name" class="form-label">Full Name</label>
+                    <label for="name" class="form-label">{{ t('auth.signup.name') }}</label>
                     <input type="text" class="form-input" id="name" name="name" required 
-                           placeholder="Enter your full name">
+                           placeholder="{{ t('auth.signup.name') }}">
                 </div>
                 
                 <div class="form-group">
-                    <label for="email" class="form-label">Email Address</label>
+                    <label for="email" class="form-label">{{ t('auth.signup.email') }}</label>
                     <input type="email" class="form-input" id="email" name="email" required 
-                           placeholder="Enter your email">
+                           placeholder="{{ t('auth.signup.email') }}">
                 </div>
                 
                 <div class="form-group">
-                    <label for="password" class="form-label">Password</label>
+                    <label for="password" class="form-label">{{ t('auth.signup.password') }}</label>
                     <input type="password" class="form-input" id="password" name="password" required 
-                           placeholder="Choose a strong password" minlength="6">
+                           placeholder="{{ t('auth.signup.password') }}" minlength="6">
                 </div>
                 
                 <div class="form-group">
-                    <label for="phone_number" class="form-label">Phone Number (Optional)</label>
+                    <label for="phone_number" class="form-label">{{ t('auth.signup.phone_number') }}</label>
                     <input type="tel" class="form-input" id="phone_number" name="phone_number" 
                            placeholder="+91 9876543210 or 9876543210"
-                           pattern="[+]*[0-9\s-()]+" title="Please enter a valid phone number">
+                           pattern="[+]*[0-9\s-()]+" title="{{ t('forms.validation.phone_invalid') }}">
                     <small class="form-help">Required for emergency SMS and voice call alerts</small>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">Alert Preferences (if phone provided)</label>
+                    <label class="form-label">{{ t('auth.signup.alert_preferences') }}</label>
                     <div style="display: flex; gap: 1rem; align-items: center;">
                         <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal;">
                             <input type="checkbox" name="alert_preferences" value="sms" checked>
-                            📱 SMS Alerts
+                            📱 {{ t('auth.signup.sms_alerts') }}
                         </label>
                         <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal;">
                             <input type="checkbox" name="alert_preferences" value="voice" checked>
-                            📞 Voice Calls
+                            📞 {{ t('auth.signup.voice_alerts') }}
                         </label>
                     </div>
                     <small class="form-help">Choose how you want to receive emergency notifications</small>
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
-                    Create Account
+                    {{ t('auth.signup.signup_button') }}
                 </button>
             </form>
             
             <div class="text-center mt-6">
-                <p class="text-secondary">Already have an account? 
+                <p class="text-secondary">{{ t('auth.signup.have_account') }}
                     <a href="{{ url_for('login') }}" class="nav-link" style="display: inline; color: var(--accent-blue);">
-                        Sign in here
+                        {{ t('auth.signup.login_link') }}
                     </a>
                 </p>
             </div>

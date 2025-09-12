@@ -5,13 +5,13 @@
 {% block content %}
 <div class="container">
   <div class="page-header">
-    <h1>🚨 Confirm Alert Broadcast</h1>
-    <p class="text-secondary">Review the report and confirm sending SMS and/or Voice call alerts.</p>
+    <h1>🚨 {{ t('alerts.confirm_title') }}</h1>
+    <p class="text-secondary">{{ t('alerts.confirm_subtitle') }}</p>
   </div>
 
   {% if not twilio_available %}
   <div class="alert alert-danger">
-    Twilio is not configured. Please set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER in .env.
+    {{ t('alerts.twilio_not_configured') }}
   </div>
   {% endif %}
 
@@ -39,22 +39,22 @@
       </div>
       <div class="card-content">
         <div class="form-group">
-          <label class="form-label">Alert Type</label>
+          <label class="form-label">{{ t('alerts.alert_type') }}</label>
           <div style="display:flex; gap:1rem;">
-            <label><input type="radio" name="alert_type" value="sms" checked> SMS</label>
-            <label><input type="radio" name="alert_type" value="voice"> Voice Call</label>
-            <label><input type="radio" name="alert_type" value="both"> Both</label>
+            <label><input type="radio" name="alert_type" value="sms" checked> {{ t('alerts.alert_types.sms') }}</label>
+            <label><input type="radio" name="alert_type" value="voice"> {{ t('alerts.alert_types.voice') }}</label>
+            <label><input type="radio" name="alert_type" value="both"> {{ t('alerts.alert_types.both') }}</label>
           </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Message</label>
+          <label class="form-label">{{ t('alerts.message') }}</label>
           <textarea id="message_content" class="form-input" rows="6">{{ suggested_message }}</textarea>
           <small class="form-help">A clear call-to-action and location helps recipients respond appropriately.</small>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Recipients</label>
+          <label class="form-label">{{ t('alerts.recipients') }}</label>
           <div class="card" style="max-height: 260px; overflow: auto;">
             <div class="card-content">
               {% if alert_users %}
@@ -73,8 +73,8 @@
         </div>
 
         <div class="mt-3">
-          <button id="sendAlertBtn" class="btn btn-primary" {% if not twilio_available %}disabled{% endif %}>Send Alert</button>
-          <a href="{{ url_for('admin_reports') }}" class="btn">Cancel</a>
+          <button id="sendAlertBtn" class="btn btn-primary" {% if not twilio_available %}disabled{% endif %}>{{ t('alerts.send_alert') }}</button>
+          <a href="{{ url_for('admin_reports') }}" class="btn">{{ t('common.cancel') }}</a>
         </div>
 
         <div id="resultBox" class="mt-3" style="display:none;"></div>
@@ -84,7 +84,7 @@
 
   <div class="card mt-4">
     <div class="card-header">
-      <h2 class="card-title">Previous Alerts for this Report</h2>
+      <h2 class="card-title">{{ t('alerts.previous_alerts') }}</h2>
     </div>
     <div class="card-content">
       {% if previous_alerts %}
@@ -96,7 +96,7 @@
         {% endfor %}
       </ul>
       {% else %}
-      <p class="text-secondary">No previous alerts have been sent for this report.</p>
+      <p class="text-secondary">{{ t('alerts.no_previous_alerts') }}</p>
       {% endif %}
     </div>
   </div>
@@ -116,7 +116,7 @@
     }
 
     sendBtn.disabled = true;
-    sendBtn.textContent = 'Sending...';
+    sendBtn.textContent = '{{ t('common.sending') }}';
     resultBox.style.display = 'none';
 
     try {
@@ -145,7 +145,7 @@
       resultBox.textContent = 'An error occurred while sending alert';
     } finally {
       sendBtn.disabled = false;
-      sendBtn.textContent = 'Send Alert';
+      sendBtn.textContent = '{{ t('alerts.send_alert') }}';
     }
   });
 </script>

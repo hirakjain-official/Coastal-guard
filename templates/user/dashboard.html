@@ -282,8 +282,8 @@
 <div class="container">
     <!-- Dashboard Header -->
     <div class="dashboard-header">
-        <h1>🌊 Welcome, {{ session.username }}!</h1>
-        <p>Monitor coastal hazards and manage your incident reports</p>
+        <h1>🌊 {{ t('common.welcome') }}, {{ session.username }}!</h1>
+        <p>{{ t('dashboard.welcome_message') }}</p>
     </div>
     
     <!-- Statistics -->
@@ -291,19 +291,19 @@
         <div class="stat-card">
             <div class="stat-icon">📋</div>
             <div class="stat-value">{{ stats.total_reports }}</div>
-            <div class="stat-label">Total Reports</div>
+            <div class="stat-label">{{ t('dashboard.stats.total_reports') }}</div>
         </div>
         
         <div class="stat-card">
             <div class="stat-icon">⏳</div>
             <div class="stat-value">{{ stats.pending_reports }}</div>
-            <div class="stat-label">Pending</div>
+            <div class="stat-label">{{ t('dashboard.stats.pending_reports') }}</div>
         </div>
         
         <div class="stat-card">
             <div class="stat-icon">✅</div>
             <div class="stat-value">{{ stats.resolved_reports }}</div>
-            <div class="stat-label">Resolved</div>
+            <div class="stat-label">{{ t('dashboard.stats.resolved_reports') }}</div>
         </div>
     </div>
     
@@ -352,23 +352,23 @@
             
             <div class="action-card compact">
                 <div class="action-icon">🚨</div>
-                <h4 class="action-title">Report Emergency</h4>
+                <h4 class="action-title">{{ t('dashboard.actions.emergency_alert') }}</h4>
                 <p class="action-description">
                     Report coastal flooding, storms, or hazards
                 </p>
                 <a href="{{ url_for('create_report') }}" class="action-button danger full-width">
-                    📝 Report Now
+                    📝 {{ t('dashboard.actions.create_report') }}
                 </a>
             </div>
             
             <div class="action-card compact">
                 <div class="action-icon">📊</div>
-                <h4 class="action-title">My Reports</h4>
+                <h4 class="action-title">{{ t('nav.my_reports') }}</h4>
                 <p class="action-description">
                     Track your submitted incident reports
                 </p>
                 <a href="{{ url_for('my_reports') }}" class="action-button success full-width">
-                    📋 View Reports
+                    📋 {{ t('dashboard.actions.view_reports') }}
                 </a>
             </div>
         </div>
@@ -378,7 +378,7 @@
             <div class="recent-reports">
                 <div class="section-title">
                     <span>📋</span>
-                    Your Recent Reports
+                    {{ t('dashboard.recent_reports') }}
                 </div>
                 
                 {% if recent_reports %}

@@ -15,6 +15,232 @@
       "signup": "Sign Up",
       "logout": "Logout"
     },
+    "common": {
+      "welcome": "Welcome",
+      "submit": "Submit",
+      "cancel": "Cancel",
+      "save": "Save",
+      "delete": "Delete",
+      "edit": "Edit",
+      "view": "View",
+      "search": "Search",
+      "filter": "Filter",
+      "loading": "Loading...",
+      "error": "Error",
+      "success": "Success",
+      "warning": "Warning",
+      "info": "Information",
+      "confirm": "Confirm",
+      "back": "Back",
+      "next": "Next",
+      "previous": "Previous",
+      "close": "Close",
+      "send": "Send",
+      "sending": "Sending...",
+      "sent": "Sent",
+      "failed": "Failed",
+      "retry": "Retry"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "welcome_message": "Welcome to your dashboard",
+      "recent_reports": "Recent Reports",
+      "stats": {
+        "total_reports": "Total Reports",
+        "pending_reports": "Pending Reports",
+        "resolved_reports": "Resolved Reports",
+        "community_reports": "Community Reports",
+        "alerts_sent": "Alerts Sent",
+        "response_time": "Response Time"
+      },
+      "actions": {
+        "create_report": "Create Report",
+        "view_reports": "View Reports",
+        "emergency_alert": "Emergency Alert",
+        "view_analytics": "View Analytics"
+      }
+    },
+    "alerts": {
+      "title": "Alert System",
+      "confirm_title": "Confirm Alert Broadcast",
+      "confirm_subtitle": "Review the report and confirm sending SMS and/or Voice call alerts.",
+      "alert_type": "Alert Type",
+      "message": "Message",
+      "recipients": "Recipients",
+      "send_alert": "Send Alert",
+      "alert_types": {
+        "sms": "SMS",
+        "voice": "Voice Call",
+        "both": "Both"
+      },
+      "previous_alerts": "Previous Alerts for this Report",
+      "no_previous_alerts": "No previous alerts have been sent for this report.",
+      "twilio_not_configured": "Twilio is not configured. Please set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER in .env.",
+      "history": {
+        "title": "Alert History",
+        "subtitle": "View all sent alerts and their delivery status",
+        "no_alerts": "No alerts have been sent yet.",
+        "broadcast_time": "Broadcast Time",
+        "alert_type": "Type",
+        "recipients_count": "Recipients",
+        "success_rate": "Success Rate",
+        "view_details": "View Details"
+      }
+    },
+    "auth": {
+      "login": {
+        "title": "Login",
+        "subtitle": "Sign in to your account",
+        "email": "Email Address",
+        "password": "Password",
+        "login_button": "Sign In",
+        "no_account": "Don't have an account?",
+        "signup_link": "Sign up here",
+        "forgot_password": "Forgot Password?"
+      },
+      "signup": {
+        "title": "Sign Up",
+        "subtitle": "Create your account",
+        "name": "Full Name",
+        "email": "Email Address",
+        "password": "Password",
+        "phone_number": "Phone Number (Optional)",
+        "alert_preferences": "Alert Preferences",
+        "sms_alerts": "SMS Alerts",
+        "voice_alerts": "Voice Call Alerts",
+        "signup_button": "Create Account",
+        "have_account": "Already have an account?",
+        "login_link": "Sign in here"
+      }
+    },
+    "admin": {
+      "title": "Administration Panel",
+      "dashboard": {
+        "title": "Admin Dashboard",
+        "subtitle": "System overview and analytics",
+        "stats": {
+          "total_reports": "Total Reports",
+          "pending_reports": "Pending",
+          "high_severity": "High Severity",
+          "active_users": "Active Users",
+          "alerts_sent": "Alerts Sent",
+          "system_uptime": "System Uptime"
+        },
+        "recent_reports": "Recent Reports",
+        "system_status": "System Status",
+        "quick_actions": "Quick Actions"
+      },
+      "reports": {
+        "title": "Reports Management",
+        "subtitle": "Manage and analyze hazard reports",
+        "view_all": "View All Reports",
+        "create_report": "Create Report",
+        "export_data": "Export Data",
+        "report_details": "Report Details",
+        "update_status": "Update Status",
+        "assign_priority": "Assign Priority",
+        "send_alert": "Send Alert",
+        "view_analysis": "View Analysis"
+      },
+      "timeline": {
+        "title": "System Timeline",
+        "subtitle": "Track all system activities and status changes",
+        "filter_by_date": "Filter by Date",
+        "filter_by_type": "Filter by Type",
+        "export_timeline": "Export Timeline"
+      },
+      "agents": {
+        "title": "Agent Management",
+        "subtitle": "Control and monitor AI agents",
+        "start_agent": "Start Agent",
+        "stop_agent": "Stop Agent",
+        "view_logs": "View Logs",
+        "agent_status": "Agent Status",
+        "last_run": "Last Run"
+      }
+    },
+    "reports": {
+      "create": {
+        "title": "Report Hazard",
+        "subtitle": "Report a coastal hazard incident",
+        "basic_info": "Basic Information",
+        "location_info": "Location Details",
+        "additional_info": "Additional Information",
+        "title_field": "Report Title",
+        "description_field": "Description",
+        "hazard_type": "Hazard Type",
+        "severity": "Severity Level",
+        "location": "Location",
+        "address": "Address",
+        "city": "City",
+        "state": "State",
+        "coordinates": "Coordinates (Optional)",
+        "image_upload": "Upload Image",
+        "submit_report": "Submit Report",
+        "draft_save": "Save as Draft"
+      },
+      "list": {
+        "title": "My Reports",
+        "subtitle": "View and manage your submitted reports",
+        "no_reports": "You haven't submitted any reports yet.",
+        "create_first": "Create your first report",
+        "status": "Status",
+        "date_created": "Date Created",
+        "last_updated": "Last Updated",
+        "view_details": "View Details",
+        "edit_report": "Edit Report"
+      },
+      "detail": {
+        "report_info": "Report Information",
+        "location_map": "Location on Map",
+        "status_history": "Status History",
+        "ai_analysis": "AI Analysis",
+        "social_media": "Social Media Correlation",
+        "admin_notes": "Admin Notes",
+        "confidence_score": "Confidence Score"
+      }
+    },
+    "forms": {
+      "required_field": "Required field",
+      "optional_field": "Optional",
+      "select_option": "Please select an option",
+      "file_upload": "Choose file",
+      "max_file_size": "Maximum file size: 8MB",
+      "supported_formats": "Supported formats",
+      "validation": {
+        "email_invalid": "Please enter a valid email address",
+        "password_short": "Password must be at least 8 characters",
+        "phone_invalid": "Please enter a valid phone number",
+        "required_missing": "This field is required"
+      }
+    },
+    "status": {
+      "pending": "Pending",
+      "reviewing": "Under Review",
+      "investigating": "Investigating",
+      "resolved": "Resolved",
+      "closed": "Closed",
+      "alerted": "Alert Sent"
+    },
+    "severity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "hazard_types": {
+      "flood": "Flood",
+      "tsunami": "Tsunami",
+      "storm_surge": "Storm Surge",
+      "coastal_erosion": "Coastal Erosion",
+      "hurricane": "Hurricane",
+      "cyclone": "Cyclone",
+      "other": "Other"
+    }
+  },
+  "hi": {
+    "brand": "कोस्टल गार्ड",
+    "language_changed": "भाषा सफलतापूर्वक बदल दी गई!",
     "reports": {
       "title": "Reports Management",
       "subtitle": "Geographic clustering and analysis of coastal hazard reports",
@@ -67,7 +293,248 @@
       "signup": "साइन अप",
       "logout": "लॉगआउट"
     },
+    "common": {
+      "welcome": "स्वागत है",
+      "submit": "जमा करें",
+      "cancel": "रद्द करें",
+      "save": "सहेजें",
+      "delete": "हटाएं",
+      "edit": "संपादित करें",
+      "view": "देखें",
+      "search": "खोज",
+      "filter": "फिल्टर",
+      "loading": "लोड हो रहा है...",
+      "error": "त्रुटि",
+      "success": "सफलता",
+      "warning": "चेतावनी",
+      "info": "जानकारी",
+      "confirm": "पुष्टि करें",
+      "back": "वापस",
+      "next": "अगला",
+      "previous": "पिछला",
+      "close": "बंद करें",
+      "send": "भेजें",
+      "sending": "भेजा जा रहा है...",
+      "sent": "भेज दिया गया",
+      "failed": "असफल",
+      "retry": "पुनः प्रयास"
+    },
+    "dashboard": {
+      "title": "डैशबोर्ड",
+      "welcome_message": "आपके डैशबोर्ड में आपका स्वागत है",
+      "recent_reports": "हाल की रिपोर्ट्स",
+      "stats": {
+        "total_reports": "कुल रिपोर्ट्स",
+        "pending_reports": "लंबित रिपोर्ट्स",
+        "resolved_reports": "समाधान की गई रिपोर्ट्स",
+        "community_reports": "सामुदायिक रिपोर्ट्स",
+        "alerts_sent": "भेजे गए अलर्ट",
+        "response_time": "प्रतिक्रिया समय"
+      },
+      "actions": {
+        "create_report": "रिपोर्ट बनाएं",
+        "view_reports": "रिपोर्ट देखें",
+        "emergency_alert": "आपातकालीन अलर्ट",
+        "view_analytics": "विश्लेषण देखें"
+      }
+    },
+    "alerts": {
+      "title": "अलर्ट सिस्टम",
+      "confirm_title": "अलर्ट प्रसारण की पुष्टि करें",
+      "confirm_subtitle": "रिपोर्ट की समीक्षा करें और SMS और/या वॉयस कॉल अलर्ट भेजने की पुष्टि करें।",
+      "alert_type": "अलर्ट प्रकार",
+      "message": "संदेश",
+      "recipients": "प्राप्तकर्ता",
+      "send_alert": "अलर्ट भेजें",
+      "alert_types": {
+        "sms": "SMS",
+        "voice": "वॉयस कॉल",
+        "both": "दोनों"
+      },
+      "previous_alerts": "इस रिपोर्ट के लिए पिछले अलर्ट",
+      "no_previous_alerts": "इस रिपोर्ट के लिए कोई पिछला अलर्ट नहीं भेजा गया है।",
+      "twilio_not_configured": "Twilio कॉन्फ़िगर नहीं है। कृपया .env में TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, और TWILIO_PHONE_NUMBER सेट करें।",
+      "history": {
+        "title": "अलर्ट इतिहास",
+        "subtitle": "सभी भेजे गए अलर्ट और उनकी डिलीवरी स्थिति देखें",
+        "no_alerts": "अभी तक कोई अलर्ट नहीं भेजा गया है।",
+        "broadcast_time": "प्रसारण समय",
+        "alert_type": "प्रकार",
+        "recipients_count": "प्राप्तकर्ता",
+        "success_rate": "सफलता दर",
+        "view_details": "विवरण देखें"
+      }
+    },
+    "auth": {
+      "login": {
+        "title": "लॉगिन",
+        "subtitle": "अपने खाते में साइन इन करें",
+        "email": "ईमेल पता",
+        "password": "पासवर्ड",
+        "login_button": "साइन इन करें",
+        "no_account": "खाता नहीं है?",
+        "signup_link": "यहाँ साइन अप करें",
+        "forgot_password": "पासवर्ड भूल गए?"
+      },
+      "signup": {
+        "title": "साइन अप",
+        "subtitle": "अपना खाता बनाएं",
+        "name": "पूरा नाम",
+        "email": "ईमेल पता",
+        "password": "पासवर्ड",
+        "phone_number": "फोन नंबर (वैकल्पिक)",
+        "alert_preferences": "अलर्ट प्राथमिकताएं",
+        "sms_alerts": "SMS अलर्ट",
+        "voice_alerts": "वॉयस कॉल अलर्ट",
+        "signup_button": "खाता बनाएं",
+        "have_account": "पहले से खाता है?",
+        "login_link": "यहाँ साइन इन करें"
+      }
+    },
+    "admin": {
+      "title": "प्रशासन पैनल",
+      "dashboard": {
+        "title": "एडमिन डैशबोर्ड",
+        "subtitle": "सिस्टम अवलोकन और विश्लेषण",
+        "stats": {
+          "total_reports": "कुल रिपोर्ट्स",
+          "pending_reports": "लंबित",
+          "high_severity": "उच्च गंभीरता",
+          "active_users": "सक्रिय उपयोगकर्ता",
+          "alerts_sent": "भेजे गए अलर्ट",
+          "system_uptime": "सिस्टम अपटाइम"
+        },
+        "recent_reports": "हाल की रिपोर्ट्स",
+        "system_status": "सिस्टम स्थिति",
+        "quick_actions": "त्वरित कार्रवाई"
+      },
+      "reports": {
+        "title": "रिपोर्ट प्रबंधन",
+        "subtitle": "खतरा रिपोर्ट्स का प्रबंधन और विश्लेषण करें",
+        "view_all": "सभी रिपोर्ट्स देखें",
+        "create_report": "रिपोर्ट बनाएं",
+        "export_data": "डेटा निर्यात करें",
+        "report_details": "रिपोर्ट विवरण",
+        "update_status": "स्थिति अपडेट करें",
+        "assign_priority": "प्राथमिकता असाइन करें",
+        "send_alert": "अलर्ट भेजें",
+        "view_analysis": "विश्लेषण देखें"
+      },
+      "timeline": {
+        "title": "सिस्टम टाइमलाइन",
+        "subtitle": "सभी सिस्टम गतिविधियों और स्थिति परिवर्तनों को ट्रैक करें",
+        "filter_by_date": "दिनांक के अनुसार फिल्टर करें",
+        "filter_by_type": "प्रकार के अनुसार फिल्टर करें",
+        "export_timeline": "टाइमलाइन निर्यात करें"
+      },
+      "agents": {
+        "title": "एजेंट प्रबंधन",
+        "subtitle": "AI एजेंट्स को नियंत्रित और मॉनिटर करें",
+        "start_agent": "एजेंट शुरू करें",
+        "stop_agent": "एजेंट बंद करें",
+        "view_logs": "लॉग्स देखें",
+        "agent_status": "एजेंट स्थिति",
+        "last_run": "अंतिम रन"
+      }
+    },
     "reports": {
+      "create": {
+        "title": "खतरा रिपोर्ट करें",
+        "subtitle": "तटीय खतरे की घटना की रिपोर्ट करें",
+        "basic_info": "बुनियादी जानकारी",
+        "location_info": "स्थान विवरण",
+        "additional_info": "अतिरिक्त जानकारी",
+        "title_field": "रिपोर्ट शीर्षक",
+        "description_field": "विवरण",
+        "hazard_type": "खतरे का प्रकार",
+        "severity": "गंभीरता स्तर",
+        "location": "स्थान",
+        "address": "पता",
+        "city": "शहर",
+        "state": "राज्य",
+        "coordinates": "निर्देशांक (वैकल्पिक)",
+        "image_upload": "छवि अपलोड करें",
+        "submit_report": "रिपोर्ट जमा करें",
+        "draft_save": "ड्राफ्ट के रूप में सेव करें"
+      },
+      "list": {
+        "title": "मेरी रिपोर्ट्स",
+        "subtitle": "अपनी जमा की गई रिपोर्ट्स देखें और प्रबंधित करें",
+        "no_reports": "आपने अभी तक कोई रिपोर्ट जमा नहीं की है।",
+        "create_first": "अपनी पहली रिपोर्ट बनाएं",
+        "status": "स्थिति",
+        "date_created": "बनाने की तारीख",
+        "last_updated": "अंतिम अपडेट",
+        "view_details": "विवरण देखें",
+        "edit_report": "रिपोर्ट संपादित करें"
+      },
+      "detail": {
+        "report_info": "रिपोर्ट जानकारी",
+        "location_map": "मानचित्र पर स्थान",
+        "status_history": "स्थिति इतिहास",
+        "ai_analysis": "AI विश्लेषण",
+        "social_media": "सोशल मीडिया सहसंबंध",
+        "admin_notes": "एडमिन नोट्स",
+        "confidence_score": "विश्वास स्कोर"
+      }
+    },
+    "forms": {
+      "required_field": "आवश्यक फ़ील्ड",
+      "optional_field": "वैकल्पिक",
+      "select_option": "कृपया एक विकल्प चुनें",
+      "file_upload": "फ़ाइल चुनें",
+      "max_file_size": "अधिकतम फ़ाइल आकार: 8MB",
+      "supported_formats": "समर्थित प्रारूप",
+      "validation": {
+        "email_invalid": "कृपया एक वैध ईमेल पता दर्ज करें",
+        "password_short": "पासवर्ड कम से कम 8 अक्षर का होना चाहिए",
+        "phone_invalid": "कृपया एक वैध फोन नंबर दर्ज करें",
+        "required_missing": "यह फ़ील्ड आवश्यक है"
+      }
+    },
+    "status": {
+      "pending": "लंबित",
+      "reviewing": "समीक्षाधीन",
+      "investigating": "जांच में",
+      "resolved": "हल हो गया",
+      "closed": "बंद",
+      "alerted": "अलर्ट भेजा गया"
+    },
+    "severity": {
+      "low": "कम",
+      "medium": "मध्यम",
+      "high": "उच्च",
+      "critical": "गंभीर"
+    },
+    "hazard_types": {
+      "flood": "बाढ़",
+      "tsunami": "सुनामी",
+      "storm_surge": "तूफानी लहर",
+      "coastal_erosion": "तटीय कटाव",
+      "hurricane": "तूफान",
+      "cyclone": "चक्रवात",
+      "other": "अन्य"
+    },
+    "reports": {
+      "create": {
+        "title": "खतरा रिपोर्ट करें",
+        "subtitle": "तटीय खतरे की घटना की रिपोर्ट करें",
+        "basic_info": "बुनियादी जानकारी",
+        "location_info": "स्थान विवरण",
+        "additional_info": "अतिरिक्त जानकारी",
+        "title_field": "रिपोर्ट शीर्षक",
+        "description_field": "विवरण",
+        "hazard_type": "खतरे का प्रकार",
+        "severity": "गंभीरता स्तर",
+        "location": "स्थान",
+        "address": "पता",
+        "city": "शहर",
+        "state": "राज्य",
+        "coordinates": "निर्देशांक (वैकल्पिक)",
+        "image_upload": "छवि अपलोड करें",
+        "submit_report": "रिपोर्ट जमा करें",
+        "draft_save": "ड्राफ्ट के रूप में सेव करें"
+      },
       "title": "रिपोर्ट प्रबंधन",
       "subtitle": "तटीय खतरों की रिपोर्ट का भौगोलिक क्लस्टरिंग और विश्लेषण",
       "filters": {

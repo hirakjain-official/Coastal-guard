@@ -257,14 +257,15 @@
             <!-- Tweet Header (Instagram-style) -->
             <div class="tweet-header">
                 <div class="tweet-avatar">
-                    {{ correlation.post_text[0]|upper if correlation.post_text else 'X' }}
+                    {% set clean_author = correlation.post_text|extract_tweet_author %}
+                    {{ clean_author[0]|upper if clean_author else 'X' }}
                 </div>
                 <div>
-                    <h3 style="margin: 0; font-size: 1rem;">{{ correlation.get('author', 'Unknown User') }}</h3>
+                    <h3 style="margin: 0; font-size: 1rem;">@{{ correlation.post_text|extract_tweet_author }}</h3>
                     <p class="text-secondary" style="margin: 0; font-size: 0.875rem;">
-                        {{ correlation.get('analyzed_at', 'Recently')[:10] if correlation.get('analyzed_at') else 'Recent' }}
+                        🗺 {{ correlation.analyzed_at[:10] if correlation.analyzed_at else 'Recent' }}
                         {% if correlation.original_language %}
-                        <span class="language-tag ml-2">{{ correlation.original_language.upper() }}</span>
+                        <span class="language-tag ml-2">🌍 {{ correlation.original_language.upper() }}</span>
                         {% endif %}
                     </p>
                 </div>
@@ -272,13 +273,18 @@
             
             <!-- Tweet Content -->
             <div class="tweet-content">
-                "{{ correlation.post_text[:500] }}{% if correlation.post_text|length > 500 %}...{% endif %}"
+                <div style="background: rgba(255, 255, 255, 0.03); padding: 1rem; border-radius: 0.5rem; border-left: 3px solid var(--accent-blue);">
+                    "{{ correlation.post_text|clean_tweet }}"
+                </div>
             </div>
             
             <!-- Tweet Meta -->
             <div class="tweet-meta">
-                <span>📍 {{ correlation.post_location or 'Location unknown' }}</span>
-                <span>ID: {{ correlation.post_id[:15] }}{% if correlation.post_id|length > 15 %}...{% endif %}</span>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <span>📍 {{ correlation.post_location or 'Location unknown' }}</span>
+                    <span>🆔 Tweet ID: {{ correlation.post_id[:15] if correlation.post_id else 'N/A' }}{% if correlation.post_id and correlation.post_id|length > 15 %}...{% endif %}</span>
+                    <span>📱 Source: {{ correlation.post_source|title or 'X/Twitter' }}</span>
+                </div>
             </div>
             
             <!-- AI Analysis Results -->

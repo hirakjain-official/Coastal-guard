@@ -105,24 +105,33 @@ class TwilioAlertService:
             # Create voice message
             voice_message = self._create_voice_message(message, report_data)
             
-            # Create TwiML for voice call
-            twiml_url = self._create_twiml_url(voice_message)
+            # Escape XML special characters in the voice message
+            escaped_message = voice_message.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&apos;')
+            
+            # Create proper TwiML with multiple Say elements for better delivery
+            twiml = f'<Response><Say voice="alice" language="en">{escaped_message}</Say><Pause length="1"/><Say voice="alice" language="en">This message will now repeat.</Say><Pause length="1"/><Say voice="alice" language="en">{escaped_message}</Say></Response>'
+            
+            logger.info(f"Making voice call to {formatted_number} with TwiML: {twiml[:100]}...")
             
             # Make voice call
             call = self.client.calls.create(
-                twiml=f'<Response><Say voice="alice">{voice_message}</Say></Response>',
+                twiml=twiml,
                 to=formatted_number,
-                from_=self.phone_number
+                from_=self.phone_number,
+                timeout=30,  # Add timeout to prevent hanging calls
+                record=False  # Don't record the call for privacy
             )
             
-            logger.info(f"Voice alert call made to {formatted_number}: {call.sid}")
+            logger.info(f"Voice alert call initiated to {formatted_number}: {call.sid}")
             return True, call.sid
             
         except TwilioException as e:
-            logger.error(f"Twilio voice call error for {phone_number}: {str(e)}")
+            error_msg = f"Twilio voice call error for {phone_number}: {str(e)}"
+            logger.error(error_msg)
             return False, str(e)
         except Exception as e:
-            logger.error(f"Unexpected voice call error for {phone_number}: {str(e)}")
+            error_msg = f"Unexpected voice call error for {phone_number}: {str(e)}"
+            logger.error(error_msg)
             return False, str(e)
     
     def send_bulk_sms_alerts(self, recipients: List[Dict], message: str, report_data: Dict) -> Dict:
@@ -328,26 +337,21 @@ Reply STOP to unsubscribe.
         if report_data.get('city') and report_data.get('state'):
             location = f" in {report_data['city']}, {report_data['state']}"
         elif report_data.get('address'):
-            location = f" at {report_data['address']}"
+            location = f" near {report_data['address']}"
         
         hazard_type = report_data.get('hazard_type', 'hazard')
         severity = report_data.get('severity', 'medium').lower()
         
-        voice_content = f"""
-This is an emergency alert from the Coastal Hazard Management System.
-
-{base_message}
-
-This is a {severity} severity {hazard_type} alert{location}.
-
-Please follow local emergency guidelines and stay safe.
-
-This message will repeat once.
-
-{base_message}
-
-Thank you for your attention. Stay safe.
-        """.strip()
+        # Create a clear, TTS-friendly message
+        voice_content = f"""This is an emergency alert from the Coastal Hazard Management System. {base_message} This is a {severity} severity {hazard_type} alert{location}. Please follow local emergency guidelines and stay safe."""
+        
+        # Clean up the message for better TTS pronunciation
+        # Remove multiple spaces and newlines
+        voice_content = ' '.join(voice_content.split())
+        
+        # Ensure the message isn't too long (TTS works better with shorter messages)
+        if len(voice_content) > 400:
+            voice_content = voice_content[:380] + "Please stay safe and follow official guidance."
         
         return voice_content
     

@@ -22,61 +22,61 @@
 {% block content %}
 <div class="container">
     <div class="mb-8">
-        <h1 class="text-center">⚠️ Report Coastal Hazard</h1>
-        <p class="text-center text-secondary">Help protect your community by reporting coastal hazards and incidents</p>
+        <h1 class="text-center">⚠️ {{ t('reports.create.title') }}</h1>
+        <p class="text-center text-secondary">{{ t('reports.create.subtitle') }}</p>
     </div>
     
     <div class="grid grid-cols-1" style="max-width: 800px; margin: 0 auto;">
         <div class="card">
             <div class="card-header">
-                <h2 class="card-title">Hazard Report Form</h2>
-                <p class="card-subtitle">Provide details about the coastal hazard you've observed</p>
+                <h2 class="card-title">{{ t('reports.create.basic_info') }}</h2>
+                <p class="card-subtitle">{{ t('reports.create.subtitle') }}</p>
             </div>
             
             <form method="POST" enctype="multipart/form-data" id="reportForm">
                 <!-- Basic Information -->
                 <div class="form-group">
-                    <label for="title" class="form-label">Report Title *</label>
+                    <label for="title" class="form-label">{{ t('reports.create.title_field') }} *</label>
                     <input type="text" class="form-input" id="title" name="title" required 
-                           placeholder="Brief description of the hazard">
+                           placeholder="{{ t('reports.create.title_field') }}">
                 </div>
                 
                 <div class="grid grid-cols-2">
                     <div class="form-group">
-                        <label for="hazard_type" class="form-label">Hazard Type *</label>
+                        <label for="hazard_type" class="form-label">{{ t('reports.create.hazard_type') }} *</label>
                         <select class="form-select" id="hazard_type" name="hazard_type" required>
-                            <option value="">Select hazard type</option>
-                            <option value="Flood">Coastal Flooding</option>
+                            <option value="">{{ t('forms.select_option') }}</option>
+                            <option value="Flood">{{ t('hazard_types.flood') }}</option>
                             <option value="High_Waves">High Waves</option>
-                            <option value="Storm_Surge">Storm Surge</option>
-                            <option value="Coastal_Erosion">Coastal Erosion</option>
-                            <option value="Tsunami">Tsunami Warning</option>
-                            <option value="Cyclone">Cyclone/Hurricane</option>
-                            <option value="Other">Other</option>
+                            <option value="Storm_Surge">{{ t('hazard_types.storm_surge') }}</option>
+                            <option value="Coastal_Erosion">{{ t('hazard_types.coastal_erosion') }}</option>
+                            <option value="Tsunami">{{ t('hazard_types.tsunami') }}</option>
+                            <option value="Cyclone">{{ t('hazard_types.cyclone') }}</option>
+                            <option value="Other">{{ t('hazard_types.other') }}</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label for="severity" class="form-label">Severity Level</label>
+                        <label for="severity" class="form-label">{{ t('reports.create.severity') }}</label>
                         <select class="form-select" id="severity" name="severity">
-                            <option value="Low">Low - Minor impact</option>
-                            <option value="Medium" selected>Medium - Moderate impact</option>
-                            <option value="High">High - Major impact</option>
-                            <option value="Critical">Critical - Life threatening</option>
+                            <option value="Low">{{ t('severity.low') }} - Minor impact</option>
+                            <option value="Medium" selected>{{ t('severity.medium') }} - Moderate impact</option>
+                            <option value="High">{{ t('severity.high') }} - Major impact</option>
+                            <option value="Critical">{{ t('severity.critical') }} - Life threatening</option>
                         </select>
                     </div>
                 </div>
                 
                 <!-- Description -->
                 <div class="form-group">
-                    <label for="description" class="form-label">Detailed Description *</label>
+                    <label for="description" class="form-label">{{ t('reports.create.description_field') }} *</label>
                     <textarea class="form-textarea" id="description" name="description" required 
-                              placeholder="Describe what you observed, including time, conditions, and impacts..." rows="4"></textarea>
+                              placeholder="{{ t('reports.create.description_field') }}..." rows="4"></textarea>
                 </div>
                 
                 <!-- Location Section -->
                 <div class="form-group">
-                    <label class="form-label">📍 Location Information</label>
+                    <label class="form-label">📍 {{ t('reports.create.location_info') }}</label>
                     
                     <div class="flex gap-4 mb-4">
                         <button type="button" class="btn btn-secondary" id="getCurrentLocation">
@@ -93,19 +93,19 @@
                     <!-- Location Details -->
                     <div class="grid grid-cols-2">
                         <div class="form-group">
-                            <label for="city" class="form-label">City</label>
-                            <input type="text" class="form-input" id="city" name="city" placeholder="City name">
+                            <label for="city" class="form-label">{{ t('reports.create.city') }}</label>
+                            <input type="text" class="form-input" id="city" name="city" placeholder="{{ t('reports.create.city') }}">
                         </div>
                         <div class="form-group">
-                            <label for="state" class="form-label">State</label>
-                            <input type="text" class="form-input" id="state" name="state" placeholder="State name">
+                            <label for="state" class="form-label">{{ t('reports.create.state') }}</label>
+                            <input type="text" class="form-input" id="state" name="state" placeholder="{{ t('reports.create.state') }}">
                         </div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="address" class="form-label">Address/Landmark</label>
+                        <label for="address" class="form-label">{{ t('reports.create.address') }}</label>
                         <input type="text" class="form-input" id="address" name="address" 
-                               placeholder="Specific address or nearby landmark">
+                               placeholder="{{ t('reports.create.address') }}">
                     </div>
                     
                     <!-- Hidden coordinate fields -->
@@ -121,15 +121,15 @@
                 
                 <!-- Optional Image Upload -->
                 <div class="form-group">
-                    <label class="form-label">📸 Photo Evidence (Optional)</label>
+                    <label class="form-label">📸 {{ t('reports.create.image_upload') }}</label>
                     <p class="text-secondary" style="font-size: 0.875rem; margin-bottom: 1rem;">
-                        Upload a photo of the hazard if available. Max 8MB, JPG/PNG/WEBP only.
+                        {{ t('forms.max_file_size') }}, {{ t('forms.supported_formats') }}.
                     </p>
                     
                     <div class="file-upload">
                         <input type="file" class="file-input" id="imageUpload" name="image" accept="image/jpeg,image/jpg,image/png,image/webp">
                         <label for="imageUpload" class="file-label">
-                            📸 Choose Photo
+                            📸 {{ t('forms.file_upload') }}
                         </label>
                     </div>
                     
@@ -139,7 +139,7 @@
                 <!-- Submit Button -->
                 <div class="text-center mt-6">
                     <button type="submit" class="btn btn-primary btn-lg">
-                        📝 Submit Report
+                        📝 {{ t('reports.create.submit_report') }}
                     </button>
                     <p class="text-secondary mt-4" style="font-size: 0.875rem;">
                         Your report will be analyzed by AI and reviewed by emergency management officials
